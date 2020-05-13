@@ -24,26 +24,32 @@ class Agent:
         self.lock_user = None
 
     def lock(self, lock_user, lock_cause):
-        if self.lock_user is None:
-            self.lock_user = lock_user
-            self.lock_cause = lock_cause
-            return True, f'Agent {self.hostname} locked'
-        elif self.lock_user == lock_user:
-            return False, f'Agent {self.hostname} already locked by you, but with a cause: {self.lock_cause}'
+        if lock_user in self.users:
+            if self.lock_user is None:
+                self.lock_user = lock_user
+                self.lock_cause = lock_cause
+                return True, f'Agent {self.hostname} locked'
+            elif self.lock_user == lock_user:
+                return False, f'Agent {self.hostname} already locked by you, but with a cause: {self.lock_cause}'
+            else:
+                return False, f'Agent {self.hostname} locked by another user'
         else:
-            return False, f'Agent {self.hostname} locked by another user'
+            return False, f'User cannot access to agent {self.hostname}'
 
     def unlock(self, lock_user, lock_cause):
-        if self.lock_user is None:
-            return True, f'Agent {self.hostname} already unlocked'
-        if self.lock_user == lock_user:
-            if self.lock_cause == lock_cause:
-                self.lock_user = None
-                self.lock_cause = None
-                return True, f'Agent {self.hostname} unlocked'
-            else:
-                return False, f'Cannot unlock agent {self.hostname}, locked with another cause: {self.lock_cause}'
-        return False, f'Cannot unlock agent {self.hostname}, locked with another user'
+        if lock_user in self.users:
+            if self.lock_user is None:
+                return True, f'Agent {self.hostname} already unlocked'
+            if self.lock_user == lock_user:
+                if self.lock_cause == lock_cause:
+                    self.lock_user = None
+                    self.lock_cause = None
+                    return True, f'Agent {self.hostname} unlocked'
+                else:
+                    return False, f'Cannot unlock agent {self.hostname}, locked with another cause: {self.lock_cause}'
+            return False, f'Cannot unlock agent {self.hostname}, locked with another user'
+        else:
+            return False, f'User cannot access to agent {self.hostname}'
 
     def execute_script_with_timeout(self, root_path, script, hostname, psexec_options=None, args_list=None,
                                     encoding='utf-8',

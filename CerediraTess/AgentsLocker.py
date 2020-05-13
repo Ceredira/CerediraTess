@@ -2,7 +2,16 @@ import threading
 
 
 class AgentsLocker:
+    """
+    Class for thread safe operations with agents for lock, unlock and get status of agents
+    """
+
     def __init__(self, list_of_agents):
+        """
+        Initialise agentLocker
+
+        :param list_of_agents: list of agents (Agent class)
+        """
         self.list_of_agents = list_of_agents
         self.dict_of_agents = {}
         for agent in self.list_of_agents:
@@ -10,66 +19,83 @@ class AgentsLocker:
         self.locking_lock = threading.Lock()
 
     def agents_lock(self, lock_user, agents_for_lock, lock_cause, min_agents_count, max_agents_count=None):
-        locking_result = {}
-        if not agents_for_lock:
-            agents_for_lock = [x.hostname for x in self.list_of_agents if lock_user in x.users]
+        """
+        Locking agents for user with specific cause
 
-        list_of_agents = [x for x in self.list_of_agents if (x.hostname in agents_for_lock) and (lock_user in x.users)]
+        :param lock_user: username for lock
+        :param agents_for_lock:
+        :param lock_cause: cause of locking
+        :param min_agents_count: minimum required agents count
+        :param max_agents_count: maximum required agents count, if None lock all available agents for lock
+        :return: dict with locking result, locking text log and list of locked agents hostname
+        """
+        locking_log = ''  # Locking log
+        locking_res = True  # Locking result, False if required agents cannot be locked
+        locked_agents = []  # List of locked agents
 
-        if len(list_of_agents) < min_agents_count:
-            locking_result = {
-                'result': False, 'locked_agents': [],
-                'locking_log': f'List of available agents less then minimum agents count {min_agents_count}'
-            }
-        else:
-            self.locking_lock.acquire()
-            try:
-                check_locking = True
-                unlocked_agents = [x for x in list_of_agents if (x.lock_user is None)]
+        self.locking_lock.acquire()
 
-                if len(unlocked_agents) < min_agents_count:
-                    locking_result = {
-                        'result': False, 'locked_agents': [],
-                        'locking_log': f'List of free agents less then minimum agents count {min_agents_count}'
-                    }
-                    check_locking = False
+        try:
+            if not agents_for_lock:
+                # Get all agents, available for lock by specified user
+                agents_for_lock = [x.hostname for x in self.list_of_agents if (lock_user in x.users)]
+
+            agents_available_for_lock = len([x.hostname for x in self.list_of_agents if
+                                             (lock_user in x.users) and  # agents available for user
+                                             (x.lock_user is None) and  # not locked agents
+                                             (x.hostname in agents_for_lock)  # agents from required list
+                                             ]
+                                            )
+
+            if max_agents_count is None:
+                max_agents_count = agents_available_for_lock
+
+            if min_agents_count <= agents_available_for_lock >= max_agents_count:
+                if max_agents_count >= min_agents_count:
+                    for agent_hostname in agents_for_lock:
+                        if agent_hostname in self.dict_of_agents:
+                            res, log = self.dict_of_agents[agent_hostname].lock(lock_user, lock_cause)
+                            locking_log += f'{log}\n'
+                            if res:
+                                locked_agents.append(agent_hostname)
+                            if len(locked_agents) >= max_agents_count:
+                                break
+                        else:
+                            locking_log += f'Agent {agent_hostname} does not exists\n'
                 else:
-                    if max_agents_count is not None:
-                        if len(unlocked_agents) < max_agents_count:
-                            locking_result = {
-                                'result': False, 'locked_agents': [],
-                                'locking_log': f'List of free agents less then maximum agents needed count {max_agents_count}'
-                            }
-                            check_locking = False
-                    else:
-                        max_agents_count = len(unlocked_agents)
+                    locking_log += f'maxAgentsCount {max_agents_count} cannot be less then ' \
+                                   f'minAgentsCount {min_agents_count}'
+                    locking_res = False
+            else:
+                locking_log += f'Not enough agents to lock. Available {agents_available_for_lock}, ' \
+                               f'required {min_agents_count} - {max_agents_count}\n'
+                locking_res = False
+        finally:
+            self.locking_lock.release()
 
-                if check_locking:
-                    locked_agents = []
-                    locking_log = ''
-                    for i in range(max_agents_count):
-                        unlocked_agents[i].lock(lock_user, lock_cause)
-                        locked_agents.append(unlocked_agents[i].hostname)
-                        locking_log += f'Agent {unlocked_agents[i].hostname} locked\n'
-
-                    locking_result = {
-                        'result': True, 'locked_agents': locked_agents,
-                        'locking_log': locking_log
-                    }
-            finally:
-                self.locking_lock.release()
-
-        return locking_result
+        return {
+            "result": locking_res, "locked_agents": locked_agents,
+            "locking_log": locking_log
+        }
 
     def agents_unlock(self, lock_user, agents_for_unlock, lock_cause):
-        unlocking_log = ''
-        unlocking_res = True
-        unlocking_agents = []
+        """
+        Unlocking agents for user with specific cause
+
+        :param lock_user: username for unlock
+        :param agents_for_unlock: list of agents hostname
+        :param lock_cause: cause of locking, for protect from unlock from another requests
+        :return: dict with unlocking result, unlocking text log and list of unlocked agents hostname
+        """
+        unlocking_log = ''  # Unlocking log
+        unlocking_res = True  # Unlocking result, False if any agent unlock error
+        unlocked_agents = []  # List of unlocked agents
 
         self.locking_lock.acquire()
 
         try:
             if not agents_for_unlock:
+                # Get all agents, available for unlock by specified user, with specified cause
                 agents_for_unlock = [x.hostname for x in self.list_of_agents if (lock_user in x.users) and
                                      (x.lock_cause == lock_cause)]
 
@@ -78,13 +104,13 @@ class AgentsLocker:
                     res, log = self.dict_of_agents[agent_hostname].unlock(lock_user, lock_cause)
                     unlocking_res = unlocking_res and res
                     unlocking_log += f'{log}\n'
-                    unlocking_agents.append(agent_hostname)
+                    unlocked_agents.append(agent_hostname)
                 else:
                     unlocking_log += f'Agent {agent_hostname} does not exists\n'
         finally:
             self.locking_lock.release()
 
         return {
-            "result": True, "unlocking_agents": unlocking_agents,
+            "result": unlocking_res, "unlocked_agents": unlocked_agents,
             "unlocking_log": unlocking_log
         }
