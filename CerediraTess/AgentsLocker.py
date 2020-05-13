@@ -1,4 +1,7 @@
+import json
 import threading
+
+from CerediraTess import utility
 
 
 class AgentsLocker:
@@ -114,3 +117,13 @@ class AgentsLocker:
             "result": unlocking_res, "unlocked_agents": unlocked_agents,
             "unlocking_log": unlocking_log
         }
+
+    def agents_status(self, lock_user, agents_for_statuses):
+        self.locking_lock.acquire()
+        try:
+            if not agents_for_statuses:
+                agents_for_statuses = [x.hostname for x in self.list_of_agents if lock_user in x.users]
+            all_agents = [x for x in self.list_of_agents if (x.hostname in agents_for_statuses) and (lock_user in x.users)]
+        finally:
+            self.locking_lock.release()
+        return json.dumps(all_agents, indent=4, default=utility.encode_agent)

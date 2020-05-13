@@ -109,11 +109,13 @@ class Handler(BaseHTTPRequestHandler):
                 resp_code, resp_headers, body = request_processor_post.execute_script(user, self.list_of_agents,
                                                                                       script_name, post_body)
             elif self.path.startswith('/agentsLock'):
-                resp_code, resp_headers, body = request_processor_post.agents_lock(self.agents_locker, user.username, post_body)
+                resp_code, resp_headers, body = request_processor_post.agents_lock(self.agents_locker, user.username,
+                                                                                   post_body)
             elif self.path.startswith('/agentsUnlock'):
-                resp_code, resp_headers, body = request_processor_post.agents_unlock(self.agents_locker, user.username, post_body)
+                resp_code, resp_headers, body = request_processor_post.agents_unlock(self.agents_locker, user.username,
+                                                                                     post_body)
             elif self.path.startswith('/agentsStatus'):
-                resp_code, resp_headers, body = request_processor_post.agents_status(self.list_of_agents, user.username,
+                resp_code, resp_headers, body = request_processor_post.agents_status(self.agents_locker, user.username,
                                                                                      post_body)
             else:
                 self.send_error(404, message=str(self.path))
@@ -121,8 +123,7 @@ class Handler(BaseHTTPRequestHandler):
 
             self.make_response(resp_code, body, **resp_headers)
 
-            # Вылетим сюда при возникновении любой ошибки
-
+        # Вылетим сюда при возникновении любой ошибки
         except Exception as e:
             logger.error(f'POST: raised exception: {e}', exc_info=True)
             # logger.error(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))

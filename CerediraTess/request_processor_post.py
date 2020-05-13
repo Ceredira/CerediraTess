@@ -8,7 +8,6 @@ import json
 import logging
 
 from CerediraTess import server
-from CerediraTess import utility
 
 module_logger = logging.getLogger('CerediraTess.request_processor_post')
 
@@ -77,13 +76,10 @@ def agents_unlock(agent_locker, user, body):
     return 200, {}, bytes(json.dumps(res, indent=4, ensure_ascii=True), 'utf-8')
 
 
-def agents_status(list_of_agents, user, body):
+def agents_status(agent_locker, user, body):
     js_receive = json.loads(body.decode('utf-8'))
     hostnames = js_receive['hostnames'] if 'hostnames' in js_receive else []
 
-    if not hostnames:
-        hostnames = [x.hostname for x in list_of_agents if user in x.users]
+    res = agent_locker.agents_status(user, hostnames)
 
-    available_agents = [x for x in list_of_agents if (x.hostname in hostnames) and (user in x.users)]
-
-    return 200, {}, bytes(json.dumps(available_agents, indent=4, default=utility.encode_agent), 'utf-8')
+    return 200, {}, bytes(res, 'utf-8')
