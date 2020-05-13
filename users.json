@@ -1,0 +1,12 @@
+[
+    {
+        "username": "usr_1",
+        "salt": "688c964643698a3d22e3d29a8ecc5c5ad7da8a82f4fd227a88afa9d9faa0843e",
+        "key": "1bd9ef2020da13e8dcfb86b850d9ce7510b27ded6178b87bc2c55f9ff8c18784"
+    },
+    {
+        "username": "usr_2",
+        "salt": "91c45406cfa1dd3553fcc21ca5bf21dcaca241154b68451d46fb0aae34b0ff9a",
+        "key": "f812dbb3b7dedbe2f575f0243f4a918113939062ebc9d6bda290df00db861c03"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "hostname": "CerediraTess",
+        "description": "Local agent",
+        "users": [
+            "usr_1"
+        ],
+        "scripts": [
+            "test.bat"
+        ],
+        "os_type": "windows"
+    },
+    {
+        "hostname": "192.168.1.189",
+        "description": "Agent 1",
+        "users": [
+            "usr_1",
+            "usr_2"
+        ],
+        "scripts": [
+            "tst_1",
+            "tst_2",
+            "test.bat"
+        ],
+        "os_type": "windows"
+    },
+    {
+        "hostname": "a2",
+        "description": "Agent 2",
+        "users": [
+            "usr_2"
+        ],
+        "scripts": [
+            "*"
+        ],
+        "os_type": "windows"
+    }
+]

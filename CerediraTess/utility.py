@@ -6,11 +6,9 @@
 """
 
 import logging
-import os
-import subprocess
-from builtins import Exception
 
-from func_timeout import func_timeout, FunctionTimedOut
+from CerediraTess.Agent import Agent
+from CerediraTess.User import User
 
 
 def retrieve_file(filename, mode='r'):
@@ -34,81 +32,29 @@ def retrieve_file_as_string(filename, mode='r'):
     return text
 
 
-def run_with_timeout(root_path, script, args_list=[], encoding='utf-8', timeout=60):
-    logger = logging.getLogger("CerediraTess.utility.run_with_timeout")
-    logger.debug(f'Execute run_with_timeout with args: {root_path}, {script}, {args_list}, {encoding}, {timeout}')
-    try:
-        return func_timeout(timeout, execute_batch, args=(root_path, script, args_list, encoding))
-    except FunctionTimedOut:
-        return f"Could not complete within {timeout} seconds and was terminated."
-    except Exception as e:
-        logger.error("Exception occurred", exc_info=True)
-        return f"Error while create process: {e}"
+def encode_complex(o):
+    if isinstance(o, Agent):
+        return {'hostname': o.hostname, 'os_type': o.os_type, 'description': o.description, 'users': o.users, 'scripts': o.scripts}
+    elif isinstance(o, User):
+        return {'username': o.username, 'salt': o.salt, 'key': o.key}
+    else:
+        type_name = o.__class__.__name__
+        raise TypeError(f'Object of type "{type_name}" is not JSON serializable')
 
 
-def run_remote_with_timeout(root_path, script, hostname, psexec_options=None, args_list=None, encoding='utf-8',
-                            timeout=60):
-    logger = logging.getLogger("CerediraTess.utility.run_remote_with_timeout")
-    logger.debug(f'Execute run_with_timeout with args: {root_path}, {script}, {args_list}, {encoding}, {timeout}')
-    try:
-        return func_timeout(timeout, execute_batch_remote,
-                            args=(root_path, script, hostname, psexec_options, args_list, encoding))
-    except FunctionTimedOut:
-        return f"Could not complete within {timeout} seconds and was terminated."
-    except Exception as e:
-        logger.error("Exception occurred", exc_info=True)
-        return f"Error while create process: {e}"
+def encode_agent(o):
+    if isinstance(o, Agent):
+        return {'hostname': o.hostname, 'lock_cause': o.lock_cause, 'lock_user': o.lock_user}
+    else:
+        type_name = o.__class__.__name__
+        raise TypeError(f'Object of type "{type_name}" is not JSON serializable')
 
-
-def execute_batch(root_path, script, args_list=[], encoding='utf-8'):
-    logger = logging.getLogger("CerediraTess.utility.execute_batch")
-
-    proc = [os.path.join(root_path, 'scripts', script)]
-    proc.extend(args_list)
-
-    try:
-        with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False) as child:
-            with child.stdout as stdout:
-                output = stdout.read().decode(encoding, errors='replace')
-    except Exception as ex:
-        output = f'Exception while execution: {ex}'
-
-    logger.debug(f'Script execution result:\n{output}')
-
-    return output
-
-
-def execute_batch_remote(root_path, script, hostname, psexec_options=None, args_list=None, encoding='utf-8'):
-    logger = logging.getLogger("CerediraTess.utility.execute_batch_remote")
-
-    if args_list is None:
-        args_list = []
-    if psexec_options is None:
-        psexec_options = {}
-
-    proc = [os.path.join(root_path, 'resources\\psexec.exe')]
-    if 'username' in psexec_options:
-        proc.extend(['-u', psexec_options['username']])
-    if 'password' in psexec_options:
-        proc.extend(['-p', psexec_options['password']])
-
-    proc.extend([f'\\\\{hostname}', '-accepteula', '-nobanner'])
-    proc.extend(['-c', os.path.join(root_path, 'scripts', script)])
-    proc.extend(args_list)
-
-    exec_command = ''
-    for i in proc:
-        exec_command += f'{i} '
-    print(exec_command)
-    output = None
-    try:
-        with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False) as child:
-            child.wait()
-            with child.stdout as stdout:
-                output = stdout.read().decode(encoding, errors="replace")
-    except Exception as ex:
-        output = f'Exception while execution: {ex}'
-
-    logger.debug(f'Script execution result:\n{output}')
-
-    return output
+def decode_complex(dct):
+    if 'hostname' in dct:
+        return Agent(dct['hostname'], dct['os_type'], dct['description'], dct['users'], dct['scripts'])
+    elif 'username' in dct:
+        if 'salt' in dct and 'key' in dct:
+            return User(dct['username'], dct['salt'], dct['key'])
+        else:
+            return User(dct['username'])
+    return dct

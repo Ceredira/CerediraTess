@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -15,13 +16,16 @@ class Handler(BaseHTTPRequestHandler):
     указанному порту.
     """
 
-    def __init__(self, request, client_address, server):
+    def __init__(self, list_of_agents, list_of_users, agents_locker, *args, **kwargs):
         """Конструктор класса, нужен для инициализации словаря с результатами запросов SQL."""
-        # self.sql_result = server.sql_result
+
+        self.list_of_agents = list_of_agents
+        self.list_of_users = list_of_users
+        self.agents_locker = agents_locker
         logger = logging.getLogger("CerediraTess.Handler.__init__")
         logger.info("Initialize handler")
 
-        BaseHTTPRequestHandler.__init__(self, request, client_address, server)
+        super().__init__(*args, **kwargs)
 
     def log_message(self, format, *args):
         return
@@ -66,27 +70,51 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         logger = logging.getLogger("CerediraTess.Handler.do_POST")
         logger.info(f'Request URL {self.path}')
-        # print(self.path)
-        # print(self.headers)
-        # print(self.rfile.read(int(self.headers.get('Content-Length', 0))))
-        # req = urllib.parse.urlparse(self.path)
-        # print(req)
-        # print(urllib.parse.parse_qs(req.query))
+
         try:
             # Получить тело запроса, для использования далее
             content_len = int(self.headers.get_all('Content-Length', 0)[0])
             post_body = self.rfile.read(content_len)
             logger.info(f'Request body:\n{post_body}')
+            auth = self.headers.get('Authorization', None)
+
+            if auth is None:
+                self.send_error(401, message=str(
+                    'Authorization header expected. Authorization must be base64(username:password).'))
+                return
+
+            decoded_auth = base64.b64decode(auth).decode()
+            if ':' in decoded_auth:
+                username, password = decoded_auth.split(':', maxsplit=1)
+                user = next((x for x in self.list_of_users if x.username == username), None)
+
+                if not user:
+                    self.send_error(403, message=str(f'User {username} does not exists in service.'))
+                    return
+                if not user.check_password(password):
+                    self.send_error(401, message=str(f'Wrong password used. Authorization failed.'))
+                    return
+
+                logger.info(f'User: {user.username}')
+            else:
+                self.send_error(401, message=str(
+                    'Error in Authorization header (expected :). Authorization must be base64(username:password).'))
+                return
 
             if self.path == '/post_response':
                 resp_code, resp_headers, body = request_processor_post.post_response(post_body)
                 # threading.currentThread().getName().encode() + b'\t' + str(threading.active_count()).encode() + b'\n')
             elif self.path.startswith('/executeScript/'):
                 script_name = self.path[15:]
-                resp_code, resp_headers, body = request_processor_post.execute_script(script_name, post_body)
-            elif self.path.startswith('/executeRemoteScript/'):
-                script_name = self.path[21:]
-                resp_code, resp_headers, body = request_processor_post.execute_remote_script(script_name, post_body)
+                resp_code, resp_headers, body = request_processor_post.execute_script(user, self.list_of_agents,
+                                                                                      script_name, post_body)
+            elif self.path.startswith('/agentsLock'):
+                resp_code, resp_headers, body = request_processor_post.agents_lock(self.agents_locker, user.username, post_body)
+            elif self.path.startswith('/agentsUnlock'):
+                resp_code, resp_headers, body = request_processor_post.agents_unlock(self.agents_locker, user.username, post_body)
+            elif self.path.startswith('/agentsStatus'):
+                resp_code, resp_headers, body = request_processor_post.agents_status(self.list_of_agents, user.username,
+                                                                                     post_body)
             else:
                 self.send_error(404, message=str(self.path))
                 return

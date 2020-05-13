@@ -1,12 +1,26 @@
+import json
 import logging.config
 import sys
+from functools import partial
 
+from CerediraTess.AgentsLocker import AgentsLocker
 from CerediraTess.server import ThreadingSimpleServer, Handler
+from CerediraTess.utility import decode_complex
 
 USE_HTTPS = False
+list_of_agents = None
+list_of_users = None
 
 
-def run():
+if __name__ == '__main__':
+    with open('agents.json') as agents_config:
+        list_of_agents = json.loads(agents_config.read(), object_hook=decode_complex)
+
+    with open('users.json') as users_config:
+        list_of_users = json.loads(users_config.read(), object_hook=decode_complex)
+
+    agents_locker = AgentsLocker(list_of_agents)
+
     dictLogConfig = {
         "version": 1,
         "handlers": {
@@ -42,11 +56,14 @@ def run():
         logger.info('Starting on Windows OS')
         try:
             logger.info('Using port: 4444')
-            server = ThreadingSimpleServer(('0.0.0.0', 4444), Handler)
+            myHandler = partial(Handler, list_of_agents, list_of_users, agents_locker)
+            server = ThreadingSimpleServer(('0.0.0.0', 4444), myHandler)
             if USE_HTTPS:
                 import ssl
+
                 logger.info('Using HTTPS')
-                server.socket = ssl.wrap_socket(server.socket, keyfile='./key.pem', certfile='./cert.pem', server_side=True)
+                server.socket = ssl.wrap_socket(server.socket, keyfile='./key.pem', certfile='./cert.pem',
+                                                server_side=True)
             else:
                 logger.info('Does not using HTTPS')
 
@@ -56,7 +73,3 @@ def run():
             logger.info('Server stopped')
     else:
         logger.info('Supporting only Windows OS.')
-
-
-if __name__ == '__main__':
-    run()
