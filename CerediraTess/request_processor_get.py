@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 """
-:author: gdjamalov@aplana.com, unixshaman@gmail.com
+:author: unixshaman@gmail.com, gdjamalov@appline.com
 Модуль для хранения статических функций обрабатывающих GET запросы к серверу
 """
 
