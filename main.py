@@ -3,7 +3,7 @@ import logging.config
 import sys
 from functools import partial
 
-from CerediraTess.AgentsLocker import AgentsLocker
+from CerediraTess.agents_locker import AgentsLocker
 from CerediraTess.server import ThreadingSimpleServer, Handler
 from CerediraTess.utility import decode_complex
 

@@ -111,13 +111,15 @@ class Agent:
         exec_command = ''
         for i in proc:
             exec_command += f'{i} '
-        print(exec_command)
-        output = None
+        logger.info(exec_command)
+
         try:
-            with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False) as child:
+            with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False) as child:
                 child.wait()
                 with child.stdout as stdout:
                     output = stdout.read().decode(encoding, errors="replace")
+                with child.stderr as stderr:
+                    output += '\n\n' + stderr.read().decode(encoding, errors="replace").replace('...\r\r', '')
         except Exception as ex:
             output = f'Exception while execution: {ex}'
 

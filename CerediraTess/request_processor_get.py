@@ -25,8 +25,10 @@ def get_file_from_server(file_path):
         file_ext = str(file_path.split('.')[-1])
         if file_ext == 'css' or 'html':
             content_type = 'text/' + file_ext
-        else:
-            content_type = 'text/plain'
-        return 200, {'Content-Type': content_type}, body
+        elif file_ext == 'js':
+            content_type = 'text/javascript'
+
+        headers = {'Content-Type': content_type} if content_type else {}
+        return 200, headers, body
     else:
         return 404, {}, bytes(f'Запрашиваемый файл {file_path} не существует', 'utf8')

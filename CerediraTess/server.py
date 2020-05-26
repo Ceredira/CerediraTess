@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -48,23 +49,18 @@ class Handler(BaseHTTPRequestHandler):
         """
         logger = logging.getLogger("CerediraTess.Handler.do_GET")
         logger.info(f'Request URL {self.path}')
-        # self.send_response(200)
-        # self.end_headers()
-        # self.wfile.write(b'Hello world\t' + threading.currentThread().getName().encode() +
-        # b'\t' + str(threading.active_count()).encode() + b'\n')
+
         try:
             if self.path == "/":  # Запрос корня сайта
-                resp_code, resp_headers, body = request_processor_get.get_file_from_server(
+                resp_code, resp_headers, body_raw = request_processor_get.get_file_from_server(
                     os.path.join(WEB_ROOT, '\\www\\index.html'))
             else:  # Запрос любой другой страницы
-                resp_code, resp_headers, body = request_processor_get.get_file_from_server(os.path.join(
-                    WEB_ROOT, self.path))
+                resp_code, resp_headers, body_raw = request_processor_get.get_file_from_server(os.path.join(
+                    WEB_ROOT, 'www', *self.path.replace('/../', '/').split('/')))
 
-            self.make_response(resp_code, body, **resp_headers)
+            self.make_response_as_raw(resp_code, body_raw, **resp_headers)
         except Exception as e:  # Вылетим сюда при возникновении любой ошибки
-            # exc_type, exc_value, exc_traceback = sys.exc_info()
             logger.error(f'GET: raised exception: {e}', exc_info=True)
-            # logger.error(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
             self.send_error(500, explain=str(e))
 
     def do_POST(self):
@@ -79,8 +75,8 @@ class Handler(BaseHTTPRequestHandler):
             auth = self.headers.get('Authorization', None)
 
             if auth is None:
-                self.send_error(401, message=str(
-                    'Authorization header expected. Authorization must be base64(username:password).'))
+                self.make_error(400, 'CT-401',
+                                'Authorization header expected. Authorization must be base64(username:password).')
                 return
 
             decoded_auth = base64.b64decode(auth).decode()
@@ -89,15 +85,15 @@ class Handler(BaseHTTPRequestHandler):
                 user = next((x for x in self.list_of_users if x.username == username), None)
 
                 if not user:
-                    self.send_error(403, message=str(f'User {username} does not exists in service.'))
+                    self.make_error(400, 'CT-403', f'User {username} does not exists in service.')
                     return
                 if not user.check_password(password):
-                    self.send_error(401, message=str(f'Wrong password used. Authorization failed.'))
+                    self.make_error(400, 'CT-401', f'Wrong password used. Authorization failed.')
                     return
 
                 logger.info(f'User: {user.username}')
             else:
-                self.send_error(401, message=str(
+                self.make_error(400, 'CT-401', message=str(
                     'Error in Authorization header (expected :). Authorization must be base64(username:password).'))
                 return
 
@@ -117,25 +113,56 @@ class Handler(BaseHTTPRequestHandler):
             elif self.path.startswith('/agentsStatus'):
                 resp_code, resp_headers, body = request_processor_post.agents_status(self.agents_locker, user.username,
                                                                                      post_body)
+            elif self.path.startswith('/getAvailableScripts'):
+                resp_code, resp_headers, body = request_processor_post.get_available_scripts(user.username,
+                                                                                             self.list_of_agents)
             else:
-                self.send_error(404, message=str(self.path))
+                self.make_error(400, 'CT-400', f'Requested path {self.path} does not exists.')
                 return
 
-            self.make_response(resp_code, body, **resp_headers)
+            if resp_code == 200:
+                self.make_response(resp_code, body, **resp_headers)
+            else:
+                self.make_error(400, f'CT-{resp_code}', body, **resp_headers)
 
         # Вылетим сюда при возникновении любой ошибки
         except Exception as e:
-            logger.error(f'POST: raised exception: {e}', exc_info=True)
-            # logger.error(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-            self.send_error(500, explain=str(e))
+            logger.error(f'POST raised CT-500 exception: {e}', exc_info=True)
+            self.make_error(500, 'CT-500', explain=str(e))
 
     def make_response(self, code, body, **kwargs):
         """Метод формирования ответа на запрос к серверу"""
+        logger = logging.getLogger("CerediraTess.Handler.make_response")
+        logger.info(f'Sending response: {code}\n{body}')
+
         self.send_response(code)
         for key in kwargs:
             self.send_header(key, kwargs[key])
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(bytes(body, encoding='utf-8'))
+
+    def make_response_as_raw(self, code, body_raw, **kwargs):
+        """Метод формирования ответа на запрос к серверу"""
+        logger = logging.getLogger("CerediraTess.Handler.make_response_as_raw")
+        logger.info(f'Sending response: {code}')
+
+        self.send_response(code)
+        for key in kwargs:
+            self.send_header(key, kwargs[key])
+        self.end_headers()
+        self.wfile.write(body_raw)
+
+    def make_error(self, code, internal_code, body, **kwargs):
+        """Метод формирования ответа на запрос к серверу"""
+        logger = logging.getLogger("CerediraTess.Handler.make_error")
+        logger.info(f'Sending error response: {code}\n{body}')
+
+        self.send_response(code)
+        for key in kwargs:
+            self.send_header(key, kwargs[key])
+        self.end_headers()
+        res = {'internalCode': internal_code, 'errorText': body}
+        self.wfile.write(bytes(json.dumps(res, indent=4, ensure_ascii=False), 'utf-8'))
 
 
 class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):

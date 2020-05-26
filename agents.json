@@ -6,7 +6,8 @@
             "usr_1"
         ],
         "scripts": [
-            "test.bat"
+            "test.bat",
+            "createOrUpdateGit.bat"
         ],
         "os_type": "windows"
     },
@@ -18,8 +19,8 @@
             "usr_2"
         ],
         "scripts": [
-            "tst_1",
-            "tst_2",
+            "func.bat",
+            "main.bat",
             "test.bat"
         ],
         "os_type": "windows"

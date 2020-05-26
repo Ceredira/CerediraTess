@@ -6,9 +6,11 @@
 """
 
 import logging
+import os
+import re
 
-from CerediraTess.Agent import Agent
-from CerediraTess.User import User
+from CerediraTess.agent import Agent
+from CerediraTess.user import User
 
 
 def retrieve_file(filename, mode='r'):
@@ -24,10 +26,9 @@ def retrieve_file_as_string(filename, mode='r'):
     """Функция возвращает строку"""
     logger = logging.getLogger("CerediraTess.utility.retrieve_file_as_string")
     logger.info("retrieve_file_as_string {0} with mode {1}".format(filename, mode))
-    text = ""
+
     with open(filename, mode=mode, encoding='utf-8') as f:
-        for line in f:
-            text += line
+        text = f.read()
 
     return text
 
@@ -49,6 +50,7 @@ def encode_agent(o):
         type_name = o.__class__.__name__
         raise TypeError(f'Object of type "{type_name}" is not JSON serializable')
 
+
 def decode_complex(dct):
     if 'hostname' in dct:
         return Agent(dct['hostname'], dct['os_type'], dct['description'], dct['users'], dct['scripts'])
@@ -58,3 +60,21 @@ def decode_complex(dct):
         else:
             return User(dct['username'])
     return dct
+
+
+def parse_script_metadata(root_path, script):
+    with open(os.path.join(root_path, 'scripts', script), encoding='utf-8') as script_file:
+        script_content = script_file.read()
+
+    script_description = re.findall(r'REM SCRIPT DESCRIPTION: (.*)', script_content)
+    script_args_desc = re.findall(r'REM ARG DESCRIPTION: (.*)', script_content)
+    script_args_example = re.findall(r'REM ARG EXAMPLE: (.*)', script_content)
+
+    result = {
+        script: {
+            'description': '\n'.join(script_description),
+            'arguments': script_args_example,
+            'argumentsDescription': script_args_desc
+        }
+    }
+    return result
