@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>CerediraTess - исполнитель задач</title>
+
     <link rel="stylesheet" type="text/css" href="public/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="public/fontawesome-free-5.13.0-web/css/all.min.css">
     <script src="public/jquery-3.5.1.min.js"></script>
     <script src="public/bootstrap.bundle.min.js"></script>
+
     <script type="text/javascript">
         var ctHost = window.location.origin;
         var scriptsMeta = {};
@@ -20,9 +21,19 @@
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
-        }
+        };
 
-        function getCTResponseBlock(parentId, agents){
+        function getCurrentDateTime() {
+            var currentdate = new Date();
+            return currentdate.getFullYear() + "."
+                + (currentdate.getMonth()+1)  + "."
+                + currentdate.getDate() + " "
+                + currentdate.getHours() + ":"
+                + currentdate.getMinutes() + ":"
+                + currentdate.getSeconds();
+        };
+
+        function getCTResponseBlock(parentId, agents, executedScript){
             var uid = uuidv4();
             var headerUid = uuidv4();
 
@@ -63,12 +74,12 @@
             var htmlRequestBlock = `<div class="card">
                     <div class="card-header" id="${headerUid}">
                         <h5 class="mb-0">
-                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#${uid}"
+                            <button class="btn btn btn-secondary" type="button" data-toggle="collapse" data-target="#${uid}"
                                     aria-expanded="true" aria-controls="${uid}">
-                                Разворачиваемая панель ${uid}
+                                Свернуть/развернуть
                             </button>
-                            <button class="btn" type="button">Удалить
-                            </button>
+                            <button class="btn btn-danger" type="button" onclick="$(this).closest('.card').remove();">Удалить</button>
+                            <label>Результат выполнения скрипта (${getCurrentDateTime()}): ${executedScript}</label>
                         </h5>
                     </div>
 
@@ -83,9 +94,17 @@
             return { "tableHTML" : htmlRequestBlock, "agentsResultRows": agentsResultRows };
         };
 
+        function setAgentRowResult(agentResultRowId, status, data) {
+            var agentRow = $("#" + agentResultRowId);
+            if (agentRow.length) {
+                $(agentRow.children()[3].children[0]).val(data);
+                agentRow.children()[2].innerHTML = getCurrentDateTime() + ": " + status;
+            }
+        }
+
         function executeScript(agentsResultRows, auth, scriptName, body) {
             for (let agent in agentsResultRows) {
-                let ffff = agentsResultRows[agent];
+                let agentResultRowId = agentsResultRows[agent];
                 $.ajax({
                     url: `executeScript/${scriptName}`,
                     method: "POST",
@@ -97,19 +116,17 @@
                         xhr.setRequestHeader("Authorization", auth);
                     },
                     success: function (data, status) {
-                        $($("#" + ffff).children()[3].children[0]).val(data);
-                        $("#" + ffff).children()[2].innerHTML = status;
+                        setAgentRowResult(agentResultRowId, status, data);
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        $($("#" + ffff).children()[3].children[0]).val(jqXHR.responseText);
-                        $("#" + ffff).children()[2].innerHTML = jqXHR.status;
+                        setAgentRowResult(agentResultRowId, jqXHR.status, jqXHR.responseText);
                     }
                 });
             }
         };
 
         function addCTHistoryBlock() {
-            var requestDict = getCTResponseBlock("#CTRequestsHistory", $("#ctAgents").val());
+            var requestDict = getCTResponseBlock("#CTRequestsHistory", $("#ctAgents").val(), $("#ctScripts").val());
             $("#CTRequestsHistory").prepend(requestDict["tableHTML"]);
             executeScript(requestDict["agentsResultRows"], getAuth(), $("#ctScripts").val(), $("#ctRequestBody").val());
         };
@@ -186,11 +203,15 @@
                     <span class="input-group-text">Авторизация</span>
                 </div>
 
-                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                <input type="text" class="form-control" placeholder="Логин" id="username">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Логин</span>
+                </div>
+                <input type="text" class="form-control" placeholder="Введите логин" id="username">
 
-                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                <input type="password" class="form-control" placeholder="Пароль" id="password">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Пароль</span>
+                </div>
+                <input type="password" class="form-control" placeholder="Введите пароль" id="password">
 
                 <input type="button" class="btn btn-primary" value="Обновить CerediraTess" id="updateCT">
             </div>

@@ -128,7 +128,7 @@ class Handler(BaseHTTPRequestHandler):
         # Вылетим сюда при возникновении любой ошибки
         except Exception as e:
             logger.error(f'POST raised CT-500 exception: {e}', exc_info=True)
-            self.make_error(500, 'CT-500', explain=str(e))
+            self.make_error(500, 'CT-500', str(e))
 
     def make_response(self, code, body, **kwargs):
         """Метод формирования ответа на запрос к серверу"""
