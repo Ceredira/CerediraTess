@@ -69,12 +69,14 @@ def parse_script_metadata(root_path, script):
     script_description = re.findall(r'REM SCRIPT DESCRIPTION: (.*)', script_content)
     script_args_desc = re.findall(r'REM ARG DESCRIPTION: (.*)', script_content)
     script_args_example = re.findall(r'REM ARG EXAMPLE: (.*)', script_content)
+    script_execution_check = re.findall(r'REM SCRIPT CHECKING: (.*)', script_content)
 
     result = {
         script: {
             'description': '\n'.join(script_description),
             'arguments': script_args_example,
-            'argumentsDescription': script_args_desc
+            'argumentsDescription': script_args_desc,
+            'executionCheck': [[y.strip() for y in x.split('||')] for x in script_execution_check]
         }
     }
     return result

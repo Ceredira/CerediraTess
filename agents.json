@@ -21,7 +21,8 @@
         "scripts": [
             "func.bat",
             "main.bat",
-            "test.bat"
+            "test.bat",
+            "createOrUpdateGit.bat"
         ],
         "os_type": "windows"
     },
