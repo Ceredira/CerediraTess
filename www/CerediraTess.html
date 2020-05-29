@@ -12,8 +12,8 @@
         body {
             font-family: serif;
         }
-        textarea {
-            font-family: monospace;
+        .ctRequestBody {
+            /*font-family: monospace;*/
         }
         .ct-table-row-success {
             background-color: aliceblue;
@@ -28,14 +28,23 @@
         .ct-response-check-error {
             color: red;
         }
+        .width-fit-content {
+            max-width: fit-content;
+        }
     </style>
 
     <script type="text/javascript">
         var ctHost = window.location.origin;
         var scriptsMeta = {};
 
+        function showError(label, body) {
+            $('#errorModalLabel').html(label);
+            $('#errorModalBody').html(body);
+            $('#errorModal').modal();
+        };
+
         function getAuth() {
-            return btoa($("#username")[0].value + ":" + $("#password")[0].value)
+            return btoa($("#username")[0].value + ":" + $("#password")[0].value);
         };
 
         function uuidv4() {
@@ -55,7 +64,7 @@
                 + currentdate.getSeconds();
         };
 
-        function getCTResponseBlock(parentId, agents, executedScript){
+        function getCTResponseBlock(parentId, agents, executedScript, executedScriptBody){
             var uid = uuidv4();
             var headerUid = uuidv4();
 
@@ -96,11 +105,14 @@
             var htmlRequestBlock = `<div class="card">
                     <div class="card-header" id="${headerUid}">
                         <h5 class="mb-0">
-                            <button class="btn btn btn-secondary" type="button" data-toggle="collapse" data-target="#${uid}"
+                            <button class="btn btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#${uid}"
                                     aria-expanded="true" aria-controls="${uid}">
                                 Свернуть/развернуть
                             </button>
-                            <button class="btn btn-danger" type="button" onclick="$(this).closest('.card').remove();">Удалить</button>
+                            <button class="btn btn-danger btn-sm" type="button" onclick="$(this).closest('.card').remove();">Удалить</button>
+                            <input type="hidden" value="${btoa(executedScript)}">
+                            <input type="hidden" value="${btoa(executedScriptBody)}">
+                            <button class="btn btn-primary btn-sm" type="button" onclick="useCurrentRequest(this)">Использовать</button>
                             <label>Результат выполнения скрипта (${getCurrentDateTime()}): ${executedScript}</label>
                         </h5>
                     </div>
@@ -115,6 +127,11 @@
 
             return { "tableHTML" : htmlRequestBlock, "agentsResultRows": agentsResultRows };
         };
+
+        function useCurrentRequest(useButton) {
+            $('#ctRequestBody').val(atob($(useButton).prev().attr('value')));
+            $('#ctScripts').val(atob($(useButton).prev().prev().attr('value')));
+        }
 
         function setAgentRowResult(agentResultRowId, status, data, result, executionCheck) {
             var agentRow = $("#" + agentResultRowId);
@@ -176,16 +193,22 @@
         };
 
         function addCTHistoryBlock() {
-            var requestDict = getCTResponseBlock("#CTRequestsHistory", $("#ctAgents").val(), $("#ctScripts").val());
+            var requestDict = getCTResponseBlock("#CTRequestsHistory", $("#ctAgents").val(), $("#ctScripts").val(), $("#ctRequestBody").val());
             $("#CTRequestsHistory").prepend(requestDict["tableHTML"]);
             executeScript(requestDict["agentsResultRows"], getAuth(), $("#ctScripts").val(), $("#ctRequestBody").val());
         };
 
-        $(document).ready(function(){
-            $("#executeCTRequest").click(function(){
-                addCTHistoryBlock();
-            });
+        function setParamInRequestBody(param, value) {
+            var obj = JSON.parse($('#ctRequestBody').val());
+            if (value !== null && value !== "") {
+                obj[param] = value;
+            } else {
+                delete obj[param];
+            }
+            $('#ctRequestBody').val(JSON.stringify(obj, null, 4));
+        }
 
+        $(document).ready(function(){
             $("#ctScripts").change(function(){
                 var ctAgents = $("#ctAgents")[0];
                 ctAgents.innerHTML = '<option value="" selected disabled>Выберите агент или агенты</option>';
@@ -200,6 +223,9 @@
                 reqBody = {};
                 reqBody.hostname = '{hostname}';
                 reqBody.args = scriptsMeta[this.value]['arguments'];
+                if (scriptsMeta[this.value]['recommendedEncoding'] !== undefined) {
+                    reqBody.encoding = scriptsMeta[this.value]['recommendedEncoding'];
+                }
 
                 $("#ctRequestBody")[0].value = JSON.stringify(reqBody, null, 4);
             });
@@ -234,6 +260,25 @@
                     }
                 });
             });
+
+            $("#executeCTRequest").click(function(){
+                addCTHistoryBlock();
+            });
+
+            $("#setEncodingParam").change(function(){
+                var value = $(this).val();
+                setParamInRequestBody('encoding', value);
+            });
+
+            $("#setTimeoutParam").change(function(){
+                var value = $(this).val();
+                setParamInRequestBody('timeout', value);
+            });
+
+            $("#setCredsParam").change(function(){
+                var value = $(this).val();
+                setParamInRequestBody('creds', value);
+            });
         });
     </script>
 </head>
@@ -248,7 +293,7 @@
         <div class="col">
         </div>
         <div class="col-10">
-            <div class="input-group mb-3">
+            <div class="input-group input-group-sm mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Авторизация</span>
                 </div>
@@ -263,45 +308,73 @@
                 </div>
                 <input type="password" class="form-control" placeholder="Введите пароль" id="password">
 
-                <input type="button" class="btn btn-primary" value="Обновить CerediraTess" id="updateCT">
+                <input type="button" class="btn btn-primary btn-sm" value="Обновить CerediraTess" id="updateCT">
             </div>
         </div>
         <div class="col">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col text-center">
-            <h2><b>Формирование запроса</b></h2>
         </div>
     </div>
     <div class="row">
         <div class="col">
         </div>
         <div class="col-10">
-            <div class="input-group mb-3">
+            <div class="input-group input-group-sm mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Скрипт</span>
                 </div>
-                <select class='custom-select' placeholder="Выберите скрипт" id="ctScripts">
+                <select class='custom-select' id="ctScripts">
                     <option value="" selected disabled>Авторизуйтесь, для получения доступных скриптов</option>
                 </select>
             </div>
-            <div class="input-group mb-3">
+            <div class="input-group input-group-sm mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Агенты</span>
                 </div>
-                <select class='custom-select' multiple placeholder="Выберите агент или агенты" id="ctAgents">
+                <select class='custom-select width-fit-content' multiple id="ctAgents">
                     <option value="" selected disabled>Выберите скрипт, для получения доступных агентов</option>
                 </select>
-            </div>
-            <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Тело запроса</span>
                 </div>
-                <textarea class="form-control" rows="8" id="ctRequestBody"></textarea>
+                <textarea class="form-control ctRequestBody" rows="8" id="ctRequestBody">{&#13;&#10;}</textarea>
+                <table>
+                    <tr>
+                        <td>
+                            <select class='custom-select custom-select-sm' id="setEncodingParam">
+                                <option value="" selected>Выберите кодировку</option>
+                                <option value="utf-8">utf-8</option>
+                                <option value="866">866</option>
+                                <option value="1251">1251</option>
+                                <option value="1252">1252</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select class='custom-select custom-select-sm' id="setCredsParam">
+                                <option value="" selected>Выберите авторизационные данные</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="number" class="form-control form-control-sm" min="1" max="1000000"
+                                   placeholder="Таймаут секунд" id="setTimeoutParam">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-block btn-sm" data-toggle="modal"
+                                    data-target="#errorModal">Валидация запроса</button>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div class="input-group mb-3">
-                <button type="button" class="btn btn-success btn-block" id="executeCTRequest">Выполнить запрос</button>
+
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <button type="button" class="btn btn-success btn-block btn-sm" id="executeCTRequest">Выполнить запрос</button>
             </div>
         </div>
         <div class="col">
@@ -319,6 +392,24 @@
             <div class="accordion" id="CTRequestsHistory"></div>
         </div>
         <div class="col">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Заголовок</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Ok">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"><pre id="errorModalBody"></pre></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
+            </div>
         </div>
     </div>
 </div>

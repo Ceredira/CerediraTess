@@ -70,13 +70,16 @@ def parse_script_metadata(root_path, script):
     script_args_desc = re.findall(r'REM ARG DESCRIPTION: (.*)', script_content)
     script_args_example = re.findall(r'REM ARG EXAMPLE: (.*)', script_content)
     script_execution_check = re.findall(r'REM SCRIPT CHECKING: (.*)', script_content)
+    script_encoding = re.findall(r'REM SCRIPT ENCODING: (.*)', script_content)
 
     result = {
         script: {
-            'description': '\n'.join(script_description),
             'arguments': script_args_example,
             'argumentsDescription': script_args_desc,
+            'description': '\n'.join(script_description),
             'executionCheck': [[y.strip() for y in x.split('||')] for x in script_execution_check]
         }
     }
+    if script_encoding:
+        result[script]['recommendedEncoding'] = ''.join(script_encoding)
     return result

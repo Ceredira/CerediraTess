@@ -4,8 +4,6 @@ import subprocess
 import threading
 from builtins import Exception
 
-from func_timeout import func_timeout, FunctionTimedOut
-
 
 class Agent:
     def __init__(self, hostname, os_type, description='', users=None, scripts=None):
@@ -59,18 +57,16 @@ class Agent:
             f'Execute run_with_timeout with args: {root_path}, {script}, {args_list}, {encoding}, {timeout}')
         try:
             if hostname == 'CerediraTess':
-                return func_timeout(timeout, self.execute_script_locally, args=(root_path, script, args_list, encoding))
+                return self.execute_script_locally(root_path, script, args_list, encoding, timeout)
             else:
-                return func_timeout(timeout, self.execute_script_remote,
-                                    args=(root_path, script, hostname, psexec_options, args_list, encoding))
-        except FunctionTimedOut:
-            return f"Could not complete within {timeout} seconds and was terminated."
+                return self.execute_script_remote(root_path, script, hostname, psexec_options, args_list, encoding,
+                                                  timeout)
         except Exception as e:
             logger.error("Exception occurred", exc_info=True)
             return f"Error while create process: {e}"
 
     @staticmethod
-    def execute_script_locally(root_path, script, args_list=None, encoding='utf-8'):
+    def execute_script_locally(root_path, script, args_list=None, encoding='utf-8', timeout=60):
         if args_list is None:
             args_list = []
         logger = logging.getLogger("CerediraTess.Agent.execute_script_locally")
@@ -79,9 +75,13 @@ class Agent:
         proc.extend(args_list)
 
         try:
-            with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False) as child:
-                with child.stdout as stdout:
-                    output = stdout.read().decode(encoding, errors='replace')
+            # with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False,
+            #                       encoding=encoding) as child:
+            #     with child.stdout as stdout:
+            #         output = stdout.read().decode(encoding, errors='replace')
+            #         stdout.flush()
+            output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
+                                             errors='replace')
         except Exception as ex:
             output = f'Exception while execution: {ex}'
 
@@ -90,7 +90,8 @@ class Agent:
         return output
 
     @staticmethod
-    def execute_script_remote(root_path, script, hostname, psexec_options=None, args_list=None, encoding='utf-8'):
+    def execute_script_remote(root_path, script, hostname, psexec_options=None, args_list=None, encoding='utf-8',
+                              timeout=60):
         logger = logging.getLogger("CerediraTess.Agent.execute_script_remote")
 
         if args_list is None:
@@ -104,7 +105,7 @@ class Agent:
         if 'password' in psexec_options:
             proc.extend(['-p', psexec_options['password']])
 
-        proc.extend([f'\\\\{hostname}', '-accepteula', '-nobanner'])
+        proc.extend([f'\\\\{hostname}', '-accepteula', '-nobanner', '-f'])
         proc.extend(['-c', os.path.join(root_path, 'scripts', script)])
         proc.extend(args_list)
 
@@ -114,12 +115,14 @@ class Agent:
         logger.info(exec_command)
 
         try:
-            with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False) as child:
-                child.wait()
-                with child.stdout as stdout:
-                    output = stdout.read().decode(encoding, errors="replace")
-                with child.stderr as stderr:
-                    output += '\n\n' + stderr.read().decode(encoding, errors="replace").replace('...\r\r', '')
+            # with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False) as child:
+            #     child.wait(timeout)
+            #     with child.stdout as stdout:
+            #         output = stdout.read().decode(encoding, errors="replace")
+            #     with child.stderr as stderr:
+            #         output += '\n\n' + stderr.read().decode(encoding, errors="replace").replace('...\r\r', '')
+            output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
+                                             errors='replace')
         except Exception as ex:
             output = f'Exception while execution: {ex}'
 

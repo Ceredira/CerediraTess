@@ -7,7 +7,14 @@
         ],
         "scripts": [
             "test.bat",
-            "createOrUpdateGit.bat"
+            "createOrUpdateGit.bat",
+            "createOrUpdateMaven.bat",
+            "agentsInfo\\getGroupsInfo.bat",
+            "agentsInfo\\getIpconfig.bat",
+            "agentsInfo\\getSet.bat",
+            "agentsInfo\\getShares.bat",
+            "agentsInfo\\getSysteminfo.bat",
+            "agentsInfo\\getTasklist.bat"
         ],
         "os_type": "windows"
     },
@@ -22,7 +29,14 @@
             "func.bat",
             "main.bat",
             "test.bat",
-            "createOrUpdateGit.bat"
+            "createOrUpdateGit.bat",
+            "createOrUpdateMaven.bat",
+            "agentsInfo\\getGroupsInfo.bat",
+            "agentsInfo\\getIpconfig.bat",
+            "agentsInfo\\getSet.bat",
+            "agentsInfo\\getShares.bat",
+            "agentsInfo\\getSysteminfo.bat",
+            "agentsInfo\\getTasklist.bat"
         ],
         "os_type": "windows"
     },

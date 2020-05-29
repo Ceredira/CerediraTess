@@ -28,6 +28,8 @@ def execute_script(user, list_of_agents, script_name, body):
     encoding = js_receive.get('encoding', 'utf-8')
     timeout = js_receive.get('timeout', 60)
 
+    script_name = script_name.replace('/', '\\')
+
     agent = next((x for x in list_of_agents if x.hostname == hostname), None)
     # Проверка существования агента в списке доступных агентов
     if not agent:
@@ -94,6 +96,8 @@ def get_available_scripts(user, list_of_agents):
         for script in scripts_list:
             if script not in uniq_scripts:
                 uniq_scripts.append(script)
+
+    uniq_scripts.sort()
 
     res_info = {}
     for script in uniq_scripts:
