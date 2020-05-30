@@ -279,6 +279,24 @@
                 var value = $(this).val();
                 setParamInRequestBody('creds', value);
             });
+
+            $("#requestParametersDescription").click(function(){
+                var script = $("#ctScripts").val();
+                if (script) {
+                    var argNumber = 1;
+                    var htmlTable = `<label>${scriptsMeta[script]['description']}</label><table class="table">`;
+                    for (var argDesc of scriptsMeta[script]['argumentsDescription']) {
+                        htmlTable += `<tr><td rowspan="2">${argNumber}</td><td>${scriptsMeta[script]['arguments'][argNumber - 1]}</td></tr>
+                        <tr><td>${argDesc}</td></tr>`;
+                        argNumber += 1;
+                    }
+                    htmlTable += '</table>';
+
+                    $('#errorModalLabel').html('Описание параметров ' + script);
+                    $('#errorModalBody').html(htmlTable);
+                    $('#errorModal').modal({show: true});
+                }
+            });
         });
     </script>
 </head>
@@ -364,8 +382,15 @@
                     </tr>
                     <tr>
                         <td>
-                            <button type="button" class="btn btn-primary btn-block btn-sm" data-toggle="modal"
-                                    data-target="#errorModal">Валидация запроса</button>
+                            <button type="button" class="btn btn-primary btn-block btn-sm"
+                                    id="requestParametersDescription">Описание параметров</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-block btn-sm" id="requestValidation">
+                                Валидация запроса
+                            </button>
                         </td>
                     </tr>
                 </table>
@@ -406,7 +431,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body"><pre id="errorModalBody"></pre></div>
+            <div class="modal-body" id="errorModalBody"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
             </div>
