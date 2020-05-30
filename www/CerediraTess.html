@@ -40,11 +40,11 @@
         function showError(label, body) {
             $('#errorModalLabel').html(label);
             $('#errorModalBody').html(body);
-            $('#errorModal').modal();
+            $('#errorModal').modal({show: true});
         };
 
         function getAuth() {
-            return btoa($("#username")[0].value + ":" + $("#password")[0].value);
+            return btoa($("#username").val() + ":" + $("#password").val());
         };
 
         function uuidv4() {
@@ -131,7 +131,7 @@
         function useCurrentRequest(useButton) {
             $('#ctRequestBody').val(atob($(useButton).prev().attr('value')));
             $('#ctScripts').val(atob($(useButton).prev().prev().attr('value')));
-        }
+        };
 
         function setAgentRowResult(agentResultRowId, status, data, result, executionCheck) {
             var agentRow = $("#" + agentResultRowId);
@@ -167,7 +167,37 @@
                     $(agentRow.children()[4]).html('FAILED');
                 }
             }
-        }
+        };
+
+
+
+        function checkRequestBody() {
+            try {
+                JSON.parse($("#ctRequestBody").val());
+                return true;
+            } catch(e) {
+                showError('Ошибка валидации тела запроса', e.toString());
+                return false;
+            }
+        };
+
+        function checkAgentsSelected() {
+            if ($("#ctAgents").val() !== null && $("#ctAgents").val().length !== 0) {
+                return true;
+            } else {
+                showError('Ошибка выполнения запроса', 'Не выбраны агент/агенты для выполнения запроса');
+                return false;
+            }
+        };
+
+        function checkScriptSelected() {
+            if ($("#ctScripts").val() !== null && $("#ctScripts").val() !== "") {
+                return true;
+            } else {
+                showError('Ошибка выполнения запроса', 'Не выбран скрипт для выполнения запроса');
+                return false;
+            }
+        };
 
         function executeScript(agentsResultRows, auth, scriptName, body) {
             for (let agent in agentsResultRows) {
@@ -206,12 +236,12 @@
                 delete obj[param];
             }
             $('#ctRequestBody').val(JSON.stringify(obj, null, 4));
-        }
+        };
 
         $(document).ready(function(){
             $("#ctScripts").change(function(){
-                var ctAgents = $("#ctAgents")[0];
-                ctAgents.innerHTML = '<option value="" selected disabled>Выберите агент или агенты</option>';
+                var ctAgents = $("#ctAgents");
+                ctAgents.html('<option value="" selected disabled>Выберите агент или агенты</option>');
 
                 for (var agent of scriptsMeta[this.value]['agents']) {
                     var op = document.createElement("option");
@@ -227,7 +257,7 @@
                     reqBody.encoding = scriptsMeta[this.value]['recommendedEncoding'];
                 }
 
-                $("#ctRequestBody")[0].value = JSON.stringify(reqBody, null, 4);
+                $("#ctRequestBody").val(JSON.stringify(reqBody, null, 4));
             });
 
             $("#updateCT").click(function(){
@@ -245,8 +275,8 @@
                         // alert("Data: " + data + "\nStatus: " + status);
                         scriptsMeta = JSON.parse(data);
 
-                        var ctScripts = $("#ctScripts")[0];
-                        ctScripts.innerHTML = '<option value="" selected disabled>Выберите скрипт для выполнения</option>';
+                        var ctScripts = $("#ctScripts");
+                        ctScripts.html('<option value="" selected disabled>Выберите скрипт для выполнения</option>');
 
                         for (var key in scriptsMeta) {
                             var op = document.createElement("option");
@@ -262,7 +292,13 @@
             });
 
             $("#executeCTRequest").click(function(){
-                addCTHistoryBlock();
+                if (checkScriptSelected() === true) {
+                    if (checkAgentsSelected() === true) {
+                        if (checkRequestBody() === true) {
+                            addCTHistoryBlock();
+                        }
+                    }
+                }
             });
 
             $("#setEncodingParam").change(function(){
@@ -296,6 +332,10 @@
                     $('#errorModalBody').html(htmlTable);
                     $('#errorModal').modal({show: true});
                 }
+            });
+
+            $("#requestValidation").click(function(){
+                checkRequestBody();
             });
         });
     </script>
