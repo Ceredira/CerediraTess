@@ -10,7 +10,7 @@
     <script src="public/jquery-3.5.1.min.js"></script>
     <script src="public/bootstrap.bundle.min.js"></script>
     <script src="public/ctCommon.js"></script>
-    <script src="public/cerediraTess.js"></script>
+    <script src="public/agentLocker.js"></script>
 </head>
 <body>
 
@@ -23,11 +23,11 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="CerediraTess.html">Выполнение запросов<span class="sr-only">(current)</span></a>
-            </li>
             <li class="nav-item">
-                <a class="nav-link" href="AgentLocker.html">Блокировка агентов</a>
+                <a class="nav-link" href="CerediraTess.html">Выполнение запросов</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="AgentLocker.html">Блокировка агентов<span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="Administration.html">Администрирование</a>
@@ -44,7 +44,7 @@
 <div class="conteiner">
     <div class="row">
         <div class="col text-center">
-            <h2><b>Выполнение запросов</b></h2>
+            <h2><b>Блокировка агентов</b></h2>
         </div>
     </div>
     <div class="row">
@@ -78,68 +78,35 @@
         <div class="col-10">
             <div class="input-group input-group-sm mb-3">
                 <div class="input-group-prepend">
-                    <span class="input-group-text">Скрипт</span>
+                    <span class="input-group-text">Причина блокировки</span>
                 </div>
-                <select class="custom-select" id="ctScripts">
-                    <option value="" selected disabled>Авторизуйтесь, для получения доступных скриптов</option>
-                </select>
+                <input type="text" class="form-control" placeholder="Укажите причину блокировки агента" id="ctCause">
             </div>
             <div class="input-group input-group-sm mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Агенты</span>
                 </div>
                 <select class="custom-select width-fit-content" multiple id="ctAgents">
-                    <option value="" selected disabled>Выберите скрипт, для получения доступных агентов</option>
+                    <option value="" selected disabled>Авторизуйтесь, для получения доступных агентов</option>
                 </select>
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Тело запроса</span>
-                </div>
-                <textarea class="form-control ctRequestBody" rows="8" id="ctRequestBody">{&#13;&#10;}</textarea>
-                <table>
-                    <tr>
-                        <td>
-                            <select class="custom-select custom-select-sm" id="setEncodingParam">
-                                <option value="" selected>Выберите кодировку</option>
-                                <option value="utf-8">utf-8</option>
-                                <option value="866">866</option>
-                                <option value="1251">1251</option>
-                                <option value="1252">1252</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <select class="custom-select custom-select-sm" id="setCredsParam">
-                                <option value="" selected>Выберите авторизационные данные</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="number" class="form-control form-control-sm" min="1" max="1000000"
-                                   placeholder="Таймаут секунд" id="setTimeoutParam">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-block btn-sm"
-                                    id="requestParametersDescription">Описание параметров</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-block btn-sm" id="requestValidation">
-                                Валидация запроса
-                            </button>
-                        </td>
-                    </tr>
+                <table class="table table-bordered table-sm col-9">
+                    <thead>
+                        <tr class="row m-0">
+                            <th class="d-inline-block col-2">Агент</th>
+                            <th class="d-inline-block col-2">Пользователь</th>
+                            <th class="d-inline-block col-8">Причина блокировки</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ctAgentsStatus">
+                    </tbody>
                 </table>
             </div>
             <div class="input-group mb-3">
 
             </div>
             <div class="input-group input-group-sm mb-3">
-                <button type="button" class="btn btn-success btn-block btn-sm" id="executeCTRequest">Выполнить запрос</button>
+                <button type="button" class="btn btn-success btn-block btn-sm col-6" id="agentsLock">Заблокировать агенты</button>
+                <button type="button" class="btn btn-primary btn-sm col-6" id="agentsUnlock">Разблокировать агенты</button>
             </div>
         </div>
         <div class="col">
@@ -147,14 +114,14 @@
     </div>
     <div class="row">
         <div class="col text-center">
-            <h2><b>История запросов</b></h2>
+            <h2><b>История блокировок</b></h2>
         </div>
     </div>
     <div class="row">
         <div class="col">
         </div>
         <div class="col-10">
-            <div class="accordion" id="CTRequestsHistory"></div>
+            <div class="accordion" id="CTLockingHistory"></div>
         </div>
         <div class="col">
         </div>
