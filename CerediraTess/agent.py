@@ -100,9 +100,9 @@ class Agent:
             psexec_options = {}
 
         proc = [os.path.join(root_path, 'resources\\psexec.exe')]
-        if 'username' in psexec_options:
+        if 'username' in psexec_options and psexec_options['username'] is not None:
             proc.extend(['-u', psexec_options['username']])
-        if 'password' in psexec_options:
+        if 'password' in psexec_options and psexec_options['password'] is not None:
             proc.extend(['-p', psexec_options['password']])
 
         proc.extend([f'\\\\{hostname}', '-accepteula', '-nobanner', '-f'])

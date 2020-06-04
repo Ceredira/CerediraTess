@@ -80,22 +80,22 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
             decoded_auth = base64.b64decode(auth).decode()
-            if ':' in decoded_auth:
-                username, password = decoded_auth.split(':', maxsplit=1)
-                user = next((x for x in self.list_of_users if x.username == username), None)
-
-                if not user:
-                    self.make_error(400, 'CT-403', f'User {username} does not exists in service.')
-                    return
-                if not user.check_password(password):
-                    self.make_error(400, 'CT-401', f'Wrong password used. Authorization failed.')
-                    return
-
-                logger.info(f'User: {user.username}')
-            else:
+            if ':' not in decoded_auth:
                 self.make_error(400, 'CT-401', message=str(
                     'Error in Authorization header (expected :). Authorization must be base64(username:password).'))
                 return
+
+            username, password = decoded_auth.split(':', maxsplit=1)
+            user = next((x for x in self.list_of_users if x.username == username), None)
+
+            if not user:
+                self.make_error(400, 'CT-403', f'User {username} does not exists in service.')
+                return
+            if not user.check_password(password):
+                self.make_error(400, 'CT-401', f'Wrong password used. Authorization failed.')
+                return
+
+            logger.info(f'User: {user.username}')
 
             if self.path == '/post_response':
                 resp_code, resp_headers, body = request_processor_post.post_response(post_body)
