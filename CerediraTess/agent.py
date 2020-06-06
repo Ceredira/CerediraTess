@@ -82,6 +82,8 @@ class Agent:
             #         stdout.flush()
             output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
                                              errors='replace')
+        except subprocess.CalledProcessError as grepexc:
+            output = f'Finish with error: {grepexc.returncode}\n\n{grepexc.output}'
         except Exception as ex:
             output = f'Exception while execution: {ex}'
 
@@ -123,6 +125,8 @@ class Agent:
             #         output += '\n\n' + stderr.read().decode(encoding, errors="replace").replace('...\r\r', '')
             output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
                                              errors='replace')
+        except subprocess.CalledProcessError as grepexc:
+            output = f'Finish with error: {grepexc.returncode}\n\n{grepexc.output}'
         except Exception as ex:
             output = f'Exception while execution: {ex}'
 
