@@ -41,14 +41,47 @@
         "os_type": "windows"
     },
     {
-        "hostname": "a2",
-        "description": "Agent 2",
+        "hostname": "192.168.142.100",
+        "description": "task 0",
         "users": [
-            "usr_2"
+            "usr_1"
         ],
         "scripts": [
-            "*"
+            "linux\\get_ifconfig.sh"
         ],
-        "os_type": "windows"
+        "os_type": "linux"
+    },
+    {
+        "hostname": "192.168.142.101",
+        "description": "task 1",
+        "users": [
+            "usr_1"
+        ],
+        "scripts": [
+            "linux\\get_ifconfig.sh"
+        ],
+        "os_type": "linux"
+    },
+    {
+        "hostname": "192.168.142.102",
+        "description": "task 2",
+        "users": [
+            "usr_1"
+        ],
+        "scripts": [
+            "linux\\get_ifconfig.sh"
+        ],
+        "os_type": "linux"
+    },
+    {
+        "hostname": "192.168.142.103",
+        "description": "task 3",
+        "users": [
+            "usr_1"
+        ],
+        "scripts": [
+            "linux\\get_ifconfig.sh"
+        ],
+        "os_type": "linux"
     }
 ]

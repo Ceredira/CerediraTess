@@ -49,24 +49,23 @@ class Agent:
         else:
             return False, f'User cannot access to agent {self.hostname}'
 
-    def execute_script_with_timeout(self, root_path, script, hostname, psexec_options=None, args_list=None,
+    def execute_script_with_timeout(self, root_path, script, psexec_options=None, args_list=None,
                                     encoding='utf-8',
                                     timeout=60):
         logger = logging.getLogger("CerediraTess.Agent.execute_script_with_timeout")
         logger.debug(
             f'Execute run_with_timeout with args: {root_path}, {script}, {args_list}, {encoding}, {timeout}')
         try:
-            if hostname == 'CerediraTess':
+            if self.hostname == 'CerediraTess':
                 return self.execute_script_locally(root_path, script, args_list, encoding, timeout)
             else:
-                return self.execute_script_remote(root_path, script, hostname, psexec_options, args_list, encoding,
+                return self.execute_script_remote(root_path, script, psexec_options, args_list, encoding,
                                                   timeout)
         except Exception as e:
             logger.error("Exception occurred", exc_info=True)
             return f"Error while create process: {e}"
 
-    @staticmethod
-    def execute_script_locally(root_path, script, args_list=None, encoding='utf-8', timeout=60):
+    def execute_script_locally(self, root_path, script, args_list=None, encoding='utf-8', timeout=60):
         if args_list is None:
             args_list = []
         logger = logging.getLogger("CerediraTess.Agent.execute_script_locally")
@@ -75,11 +74,6 @@ class Agent:
         proc.extend(args_list)
 
         try:
-            # with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False,
-            #                       encoding=encoding) as child:
-            #     with child.stdout as stdout:
-            #         output = stdout.read().decode(encoding, errors='replace')
-            #         stdout.flush()
             output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
                                              errors='replace')
         except subprocess.CalledProcessError as grepexc:
@@ -91,8 +85,7 @@ class Agent:
 
         return output
 
-    @staticmethod
-    def execute_script_remote(root_path, script, hostname, psexec_options=None, args_list=None, encoding='utf-8',
+    def execute_script_remote(self, root_path, script, psexec_options=None, args_list=None, encoding='utf-8',
                               timeout=60):
         logger = logging.getLogger("CerediraTess.Agent.execute_script_remote")
 
@@ -101,15 +94,28 @@ class Agent:
         if psexec_options is None:
             psexec_options = {}
 
-        proc = [os.path.join(root_path, 'resources\\psexec.exe')]
-        if 'username' in psexec_options and psexec_options['username'] is not None:
-            proc.extend(['-u', psexec_options['username']])
-        if 'password' in psexec_options and psexec_options['password'] is not None:
-            proc.extend(['-p', psexec_options['password']])
+        if self.os_type == 'windows':
+            proc = [os.path.join(root_path, 'resources\\psexec.exe')]
+            if 'username' in psexec_options and psexec_options['username'] is not None:
+                proc.extend(['-u', psexec_options['username']])
+            if 'password' in psexec_options and psexec_options['password'] is not None:
+                proc.extend(['-p', psexec_options['password']])
 
-        proc.extend([f'\\\\{hostname}', '-accepteula', '-nobanner', '-f'])
-        proc.extend(['-c', os.path.join(root_path, 'scripts', script)])
-        proc.extend(args_list)
+            proc.extend([f'\\\\{self.hostname}', '-accepteula', '-nobanner', '-f'])
+            proc.extend(['-c', os.path.join(root_path, 'scripts', script)])
+            proc.extend(args_list)
+        else:
+            proc = [os.path.join(root_path, 'resources\\plink.exe')]
+            if 'username' in psexec_options and psexec_options['username'] is not None:
+                proc.extend(['-l', psexec_options['username']])
+            if 'password' in psexec_options and psexec_options['password'] is not None:
+                proc.extend(['-pw', psexec_options['password']])
+            if 'port' in psexec_options and psexec_options['port'] is not None:
+                proc.extend(['-P', psexec_options['port']])
+
+            proc.extend([self.hostname, '-ssh', '-batch'])
+            proc.extend(args_list)
+            proc.extend(['-m', os.path.join(root_path, 'scripts', script)])
 
         exec_command = ''
         for i in proc:
@@ -117,12 +123,6 @@ class Agent:
         logger.info(exec_command)
 
         try:
-            # with subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False) as child:
-            #     child.wait(timeout)
-            #     with child.stdout as stdout:
-            #         output = stdout.read().decode(encoding, errors="replace")
-            #     with child.stderr as stderr:
-            #         output += '\n\n' + stderr.read().decode(encoding, errors="replace").replace('...\r\r', '')
             output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
                                              errors='replace')
         except subprocess.CalledProcessError as grepexc:

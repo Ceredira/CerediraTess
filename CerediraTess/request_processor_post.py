@@ -42,7 +42,7 @@ def execute_script(user, list_of_agents, script_name, body):
     if script_name not in agent.scripts:
         return 403, {}, f'Script {script_name} not available for execution on host {hostname}'
 
-    res = agent.execute_script_with_timeout(server.WEB_ROOT, script_name, hostname,
+    res = agent.execute_script_with_timeout(server.WEB_ROOT, script_name,
                                             {'username': username, 'password': password},
                                             args, encoding, timeout)
     return 200, {}, res
