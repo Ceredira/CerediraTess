@@ -116,6 +116,13 @@ class Handler(BaseHTTPRequestHandler):
             elif self.path.startswith('/getAvailableScripts'):
                 resp_code, resp_headers, body = request_processor_post.get_available_scripts(user.username,
                                                                                              self.list_of_agents)
+            elif self.path.startswith('/getAgents'):
+                resp_code, resp_headers, body = request_processor_post.get_agents(self.list_of_agents)
+            elif self.path.startswith('/getAgent'):
+                resp_code, resp_headers, body = request_processor_post.get_agent(self.list_of_agents, post_body)
+            elif self.path.startswith('/setAgent'):
+                resp_code, resp_headers, body = request_processor_post.set_agent(user.username,
+                                                                                 self.list_of_agents)
             else:
                 self.make_error(400, 'CT-400', f'Requested path {self.path} does not exists.')
                 return

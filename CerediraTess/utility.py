@@ -51,6 +51,15 @@ def encode_agent(o):
         raise TypeError(f'Object of type "{type_name}" is not JSON serializable')
 
 
+def encode_agent_full(o):
+    if isinstance(o, Agent):
+        return {'hostname': o.hostname, 'description': o.description, 'users': o.users, 'scripts': o.scripts,
+                'os_type': o.os_type}
+    else:
+        type_name = o.__class__.__name__
+        raise TypeError(f'Object of type "{type_name}" is not JSON serializable')
+
+
 def decode_complex(dct):
     if 'hostname' in dct:
         return Agent(dct['hostname'], dct['os_type'], dct['description'], dct['users'], dct['scripts'])

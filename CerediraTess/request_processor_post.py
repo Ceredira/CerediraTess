@@ -106,3 +106,19 @@ def get_available_scripts(user, list_of_agents):
         res_info.update(script_metadata)
 
     return 200, {}, json.dumps(res_info, indent=4, ensure_ascii=False)
+
+
+def get_agents(list_of_agents):
+    return 200, {}, json.dumps(list_of_agents, indent=4, ensure_ascii=False, default=utility.encode_agent_full)
+
+
+def get_agent(list_of_agents, body):
+    js_receive = json.loads(body.decode('utf-8'))
+    hostname = js_receive.get('hostname', [])
+
+    agent = next((x for x in list_of_agents if x.hostname == hostname), None)
+    # Проверка существования агента в списке доступных агентов
+    if not agent:
+        return 404, {}, f'Host {hostname} not found'
+
+    return 200, {}, json.dumps(agent, indent=4, ensure_ascii=False, default=utility.encode_agent_full)
