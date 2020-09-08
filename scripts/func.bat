@@ -1,0 +1,10 @@
+@ECHO OFF
+CHCP 65001
+
+SET FUNC=%1
+SHIFT /1
+GOTO %FUNC%
+
+:WAIT
+    ping -n %~1 127.0.0.1
+EXIT /B

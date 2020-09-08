@@ -1,0 +1,22 @@
+body {
+    font-family: serif;
+}
+.ctRequestBody {
+    /*font-family: monospace;*/
+}
+.ct-table-row-success {
+    background-color: aliceblue;
+}
+.ct-table-row-error {
+    background-color: mistyrose;
+}
+
+.ct-response-check-success {
+    color: green;
+}
+.ct-response-check-error {
+    color: red;
+}
+.width-fit-content {
+    max-width: fit-content;
+}

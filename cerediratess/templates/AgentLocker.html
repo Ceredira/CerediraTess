@@ -1,0 +1,162 @@
+{% import 'main_menu.html' as layout with context -%}
+{% import 'admin/static.html' as admin_static with context %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CerediraTess - Блокировка задач</title>
+
+    <link rel="stylesheet" type="text/css" href="static/bootstrap-flatly.min.css">
+    <link rel="stylesheet" type="text/css" href="static/ctStyle.css">
+
+    <script src="{{ admin_static.url(filename='vendor/jquery.min.js') }}" type="text/javascript"></script>
+    <script src="static/bootstrap.bundle.min.js"></script>
+
+    <script src="static/ctCommon.js"></script>
+    <script src="static/agentLocker.js"></script>
+</head>
+<body>
+
+{{ layout.main_menu('AgentLocker', 4) }}
+
+{% if current_user.is_authenticated %}
+<div class="conteiner">
+    <div class="row">
+        <div class="col text-center">
+            <h4><b>Блокировка агентов</b></h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col-10">
+            <div class="input-group input-group-sm mb-3">
+                <input type="button" class="btn btn-primary btn-sm" value="Обновить статусы" id="updateCT">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Причина блокировки</span>
+                </div>
+                <input type="text" class="form-control" placeholder="Укажите причину блокировки агента" id="ctCause">
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Агенты</span>
+                </div>
+                <select class="custom-select width-fit-content" multiple id="ctAgents">
+                    <option value="" selected disabled>Авторизуйтесь, для получения доступных агентов</option>
+                </select>
+                <table class="table table-bordered table-sm col-9">
+                    <thead>
+                    <tr class="row m-0">
+                        <th class="d-inline-block col-2">Агент</th>
+                        <th class="d-inline-block col-2">Пользователь</th>
+                        <th class="d-inline-block col-8">Причина блокировки</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ctAgentsStatus">
+                    </tbody>
+                </table>
+            </div>
+            <div class="input-group mb-3">
+
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <button type="button" class="btn btn-success btn-block btn-sm col-6" id="agentsLock">Заблокировать
+                    агенты
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm col-6" id="agentsUnlock">Разблокировать агенты
+                </button>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <h4><b>История блокировок</b></h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col-10">
+            <div class="accordion" id="CTLockingHistory"></div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+{% else %}
+<br/>
+<div class="container">
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col-10">
+            <form method="POST" action="">
+                {{ form.hidden_tag() if form.hidden_tag }}
+            <!--    {% for f in form if f.type != 'CSRFTokenField' %}-->
+            <!--    <div class="form-group">-->
+            <!--        {{ f.label }}-->
+            <!--        {{ f(class_="form-control") }}-->
+            <!--        {% if f.errors %}-->
+            <!--        <ul>-->
+            <!--            {% for e in f.errors %}-->
+            <!--            <li>{{ e }}</li>-->
+            <!--            {% endfor %}-->
+            <!--        </ul>-->
+            <!--        {% endif %}-->
+            <!--    </div>-->
+            <!--    {% endfor %}-->
+                {{ form.csrf_token }}
+                <div class="input-group input-group-sm mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Логин</span>
+                    </div>
+                    {{ form.username(class_="form-control") }}
+                    {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                    {{ error }}
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="input-group input-group-sm mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Пароль</span>
+                    </div>
+                    {{ form.password(class_="form-control") }}
+                    {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                    {{ error }}
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <button class="btn btn-primary" type="submit">Войти</button>
+                {{ link | safe }}
+            </form>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Заголовок</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Ok">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="errorModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
