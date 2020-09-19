@@ -2,7 +2,7 @@ import base64
 
 import flask_login as login
 
-from cerediratess.models.User import User
+from cerediratess.models.user import User
 
 
 def init_login(app):

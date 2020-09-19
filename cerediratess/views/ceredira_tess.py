@@ -4,7 +4,7 @@ from flask_admin import helpers
 
 from cerediratess.commons import app
 from cerediratess.forms import LoginForm
-from cerediratess.models.Role import Role
+from cerediratess.models.role import Role
 
 
 @app.route('/', methods=('GET', 'POST'))

@@ -7,8 +7,8 @@ from werkzeug.utils import redirect
 from wtforms import form, fields, validators
 
 from cerediratess.db import db
-from cerediratess.models.Role import Role
-from cerediratess.models.User import User
+from cerediratess.models.role import Role
+from cerediratess.models.user import User
 
 
 class LoginForm(form.Form):
