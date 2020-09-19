@@ -1,4 +1,5 @@
-from cerediratess import app
+from cerediratess.commons import app
+from flask_login import login_required
 
 
 @app.route('/static/<path:path>')

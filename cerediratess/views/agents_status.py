@@ -5,7 +5,7 @@ from flask import request
 from flask_login import login_required
 
 from cerediratess.commons import app, agents_locker
-from cerediratess.models.Agent import Agent
+from cerediratess.models.agent import Agent
 
 
 def encode_agent(o):

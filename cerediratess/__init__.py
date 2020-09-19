@@ -6,13 +6,15 @@ from flask_babelex import Babel
 import config
 from cerediratess.db import db
 from cerediratess.forms import MyModelView, MyAdminIndexView
-from cerediratess.models.Agent import Agent
-from cerediratess.models.OperationSystemType import OperationSystemType
-from cerediratess.models.Role import Role
-from cerediratess.models.Script import Script
-from cerediratess.models.User import User
+from cerediratess.models.agent import Agent
+from cerediratess.models.operation_system_type import OperationSystemType
+from cerediratess.models.role import Role
+from cerediratess.models.script import Script
+from cerediratess.models.user import User
 from cerediratess.my_flask_login import init_login
 from cerediratess.views import *
+from cerediratess.views.static import *
+from cerediratess.views.www import *
 
 
 def create_app():
