@@ -1,6 +1,6 @@
 import multiprocessing
 
-from cerediratess import create_app
+from ceredira_tess import create_app
 
 app = create_app()
 
