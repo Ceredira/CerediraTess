@@ -1,0 +1,45 @@
+{% import 'admin/static.html' as admin_static with context %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в систему</title>
+</head>
+<body>
+
+{% for category, message in get_flashed_messages(with_categories=true) %}
+<spam class="{{ category }}">{{ message }}</spam>
+{% endfor %}
+
+<form action="" method="post">
+    {{ form.csrf_token }}
+    <div class="form-group">
+        <label for="username">Логин</label>
+        {{ form.username() }}
+        {% if form.username.errors %}
+        {% for error in form.username.errors %}
+        {{ error }}
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль</label>
+        {{ form.password() }}
+        {% if form.password.errors %}
+        {% for error in form.password.errors %}
+        {{ error }}
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label for="remember">Запомнить?</label>
+        {{ form.remember() }}
+    </div>
+    <div class="form-group">
+        {{ form.submit() }}
+    </div>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% import 'main_menu.html' as ct_layout with context -%}
+{% extends './admin/base.html' %}
+
+{% block head_css %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="/static/ctStyle_admin.css">
+
+{% endblock %}
+
+<!--{% block access_control %}-->
+<!--{% if current_user.is_authenticated %}-->
+<!--<div class="btn-group pull-right">-->
+<!--    <a class="btn dropdown-toggle btn-link" data-toggle="dropdown" href="#">-->
+<!--        <i class="icon-user"></i> {{ current_user.username }} <span class="caret"></span>-->
+<!--    </a>-->
+<!--    <ul class="dropdown-menu">-->
+<!--        <li><a href="{{ url_for('admin.logout_view') }}">Выход</a></li>-->
+<!--    </ul>-->
+<!--</div>-->
+<!--{% endif %}-->
+<!--{% endblock %}-->
+
+{% block page_body %}
+    {{ ct_layout.main_menu('admin') }}
+    <div class="container{%if config.get('FLASK_ADMIN_FLUID_LAYOUT', False) %}-fluid{% endif %}">
+
+      {% block messages %}
+      {{ layout.messages() }}
+      {% endblock %}
+
+      {# store the jinja2 context for form_rules rendering logic #}
+      {% set render_ctx = h.resolve_ctx() %}
+
+      {% block body %}{% endblock %}
+    </div>
+{% endblock %}
