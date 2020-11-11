@@ -35,7 +35,7 @@ def create_app():
     with app.app_context():
         import flask_admin as admin
         # Create admin
-        admin = admin.Admin(app, 'CerediraTess', template_mode='bootstrap3', index_view=MyAdminIndexView(),
+        admin = admin.Admin(app, 'CerediraTess', template_mode='bootstrap4', index_view=MyAdminIndexView(),
                             base_template='my_master.html')
 
         admin.add_link(MenuLink(name='Выполнение запросов', category='', url='/CerediraTess.html'))

@@ -1,8 +1,9 @@
 import os
 
 from flask import send_from_directory, abort, send_file
-from config import BASEDIR
+
 from ceredira_tess.commons import app
+from config import BASEDIR
 
 
 @app.route('/www/<path:path>')

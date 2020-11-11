@@ -1,5 +1,6 @@
-from ceredira_tess.commons import app
 from flask_login import login_required
+
+from ceredira_tess.commons import app
 
 
 @app.route('/static/<path:path>')

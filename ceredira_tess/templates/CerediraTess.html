@@ -21,9 +21,8 @@
 </head>
 <body>
 
-{{ layout.main_menu('CerediraTess', 4) }}
+{{ layout.main_menu('CerediraTess') }}
 
-{% if current_user.is_authenticated %}
 <div class="conteiner">
     <div class="row">
         <div class="col text-center">
@@ -121,61 +120,6 @@
         </div>
     </div>
 </div>
-
-{% else %}
-<br/>
-<div class="container">
-    <div class="row">
-        <div class="col">
-        </div>
-        <div class="col-10">
-            <form method="POST" action="">
-                {{ form.hidden_tag() if form.hidden_tag }}
-            <!--    {% for f in form if f.type != 'CSRFTokenField' %}-->
-            <!--    <div class="form-group">-->
-            <!--        {{ f.label }}-->
-            <!--        {{ f(class_="form-control") }}-->
-            <!--        {% if f.errors %}-->
-            <!--        <ul>-->
-            <!--            {% for e in f.errors %}-->
-            <!--            <li>{{ e }}</li>-->
-            <!--            {% endfor %}-->
-            <!--        </ul>-->
-            <!--        {% endif %}-->
-            <!--    </div>-->
-            <!--    {% endfor %}-->
-                {{ form.csrf_token }}
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">Логин</span>
-                    </div>
-                    {{ form.username(class_="form-control") }}
-                    {% if form.username.errors %}
-                    {% for error in form.username.errors %}
-                    {{ error }}
-                    {% endfor %}
-                    {% endif %}
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">Пароль</span>
-                    </div>
-                    {{ form.password(class_="form-control") }}
-                    {% if form.password.errors %}
-                    {% for error in form.password.errors %}
-                    {{ error }}
-                    {% endfor %}
-                    {% endif %}
-                </div>
-                <button class="btn btn-primary" type="submit">Войти</button>
-                {{ link | safe }}
-            </form>
-        </div>
-        <div class="col">
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
      aria-hidden="true">
