@@ -1,6 +1,5 @@
-{% macro main_menu(from_page=None, bs_version=None) %}
+{% macro main_menu(from_page=None) %}
 
-{% if bs_version == 4 %}
     <nav class="navbar navbar-expand navbar-dark bg-primary">
         <a class="navbar-brand">CerediraTess</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -44,69 +43,10 @@
                         <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('admin.logout_view') }}">Выход</a></li>
+                        <li><a href="{{ url_for('app.logout') }}">Выход</a></li>
                     </ul>
                 </div>
             {% endif %}
         </div>
     </nav>
-{% else %}
-
-    <!-- Классы navbar и navbar-default (базовые классы меню) -->
-    <nav class="navbar navbar-default" style="border-radius: 0px;">
-        <!-- Контейнер (определяет ширину Navbar) -->
-        <div class="container-fluid">
-            <!-- Заголовок -->
-            <div class="navbar-header">
-                <!-- Кнопка «Гамбургер» отображается только в мобильном виде (предназначена для открытия основного содержимого Navbar) -->
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-main">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <!-- Бренд или название сайта (отображается в левой части меню) -->
-                <a class="navbar-brand" href="#">CerediraTess</a>
-            </div>
-            <!-- Основная часть меню (может содержать ссылки, формы и другие элементы) -->
-            <div class="collapse navbar-collapse" id="navbar-main">
-                <ul class="nav navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/CerediraTess.html">Выполнение запросов
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/AgentLocker.html">Блокировка агентов
-                        </a>
-                    </li>
-                    {% if current_user.is_authenticated %}
-                        {% if role.query.filter_by(rolename='admin').first() in current_user.roles %}
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Администрирование<span class="caret"></span></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="/admin">Главная</a></li>
-                                    <li><a href="/admin/Agent">Агенты</a></li>
-                                    <li><a href="/admin/Script">Скрипты</a></li>
-                                    <li><a href="/admin/User">Пользователи</a></li>
-                                    <li><a href="/admin/Role">Роли</a></li>
-                                    <li><a href="/admin/OperationSystemType">Типы ОС</a></li>
-                                </ul>
-                            </li>
-                        {% endif %}
-                    {% endif %}
-                </ul>
-                {% if current_user.is_authenticated %}
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ current_user.username }}<span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="{{ url_for('admin.logout_view') }}">Выход</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
-{% endif %}
-
 {% endmacro %}
