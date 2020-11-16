@@ -1,7 +1,7 @@
 {% macro main_menu(from_page=None) %}
 
     <nav class="navbar navbar-expand navbar-dark bg-primary">
-        <a class="navbar-brand">CerediraTess</a>
+        <div class="navbar-brand">CerediraTess</div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -37,10 +37,9 @@
                 {% endif %}
             </ul>
             {% if current_user.is_authenticated %}
-                <div class="btn-group pull-right">
+                <div class="btn-group pull-left">
                     <a class="btn dropdown-toggle btn-link" data-toggle="dropdown" href="#">
                         {{ current_user.username }}
-                        <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('app.logout') }}">Выход</a></li>
