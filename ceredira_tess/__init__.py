@@ -27,7 +27,7 @@ def create_app():
                 )
     app.config.from_object(config.Config)
 
-    babel = Babel(app)
+    babel = Babel(app, default_locale='ru')
     db.init_app(app)
 
     init_login(app)
@@ -36,7 +36,7 @@ def create_app():
         import flask_admin as admin
         # Create admin
         admin = admin.Admin(app, 'CerediraTess', template_mode='bootstrap4', index_view=MyAdminIndexView(),
-                            base_template='my_master.html')
+                            base_template='my_master.html', static_url_path='../static')
 
         admin.add_link(MenuLink(name='Выполнение запросов', category='', url='/CerediraTess.html'))
         admin.add_link(MenuLink(name='Блокировка агентов', category='', url='/AgentLocker.html'))
