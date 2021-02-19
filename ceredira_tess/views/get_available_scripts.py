@@ -16,18 +16,20 @@ def get_available_scripts():
         with open(os.path.join(root_path, 'scripts', script), encoding='utf-8') as script_file:
             script_content = script_file.read()
 
-        script_description = re.findall(r'REM SCRIPT DESCRIPTION: (.*)', script_content)
-        script_args_desc = re.findall(r'REM ARG DESCRIPTION: (.*)', script_content)
-        script_args_example = re.findall(r'REM ARG EXAMPLE: (.*)', script_content)
-        script_execution_check = re.findall(r'REM SCRIPT CHECKING: (.*)', script_content)
-        script_encoding = re.findall(r'REM SCRIPT ENCODING: (.*)', script_content)
+        script_description = re.findall(r'rem script description: (.*)', script_content)
+        script_args_desc = re.findall(r'rem arg description: (.*)', script_content)
+        script_args_example = re.findall(r'rem arg example: (.*)', script_content)
+        script_execution_check = re.findall(r'rem script checking: (.*)', script_content)
+        script_encoding = re.findall(r'rem script encoding: (.*)', script_content)
+        script_timeout = re.findall(r'rem script timeout: (.*)', script_content)
 
         result = {
             script: {
                 'arguments': script_args_example,
                 'argumentsDescription': script_args_desc,
                 'description': '\n'.join(script_description),
-                'executionCheck': [[y.strip() for y in x.split('||')] for x in script_execution_check]
+                'executionCheck': [[y.strip() for y in x.split('||')] for x in script_execution_check],
+                'timeout': script_timeout
             }
         }
         if script_encoding:

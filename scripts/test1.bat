@@ -5,3 +5,5 @@ ECHO asdf
 ECHO asdf
 ECHO asdf
 ECHO %1
+
+ECHO Привет, как дела. Добрый

@@ -13,6 +13,6 @@ def send_static_unauthorized(path):
         if file_extension == '.html' or file_extension == '.txt':
             return send_file(os.path.join(BASEDIR, 'www', path))
         else:
-            return send_from_directory('../www/', filename=path, as_attachment=True)
+            return send_from_directory(os.path.join(BASEDIR, 'www'), filename=path, as_attachment=True)
     except FileNotFoundError:
         abort(404)

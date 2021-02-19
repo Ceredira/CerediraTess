@@ -122,8 +122,8 @@ class AgentsLocker:
         list_of_agents = [agent for x in lock_user.roles for agent in x.agents]
         try:
             if not agents_for_statuses:
-                agents_for_statuses = list_of_agents
-            all_agents = [x for x in list_of_agents if x in agents_for_statuses]
+                agents_for_statuses = [x.hostname for x in list_of_agents]
+            all_agents = [x for x in list_of_agents if x.hostname in agents_for_statuses]
         finally:
             self.locking_lock.release()
         return all_agents

@@ -26,7 +26,7 @@ $(document).ready(function(){
 
     $("#setTimeoutParam").change(function(){
         var value = $(this).val();
-        setParamInRequestBody('timeout', value);
+        setParamInRequestBody('timeout', parseInt(value, 10));
     });
 
     $("#setCredsParam").change(function(){
@@ -112,6 +112,9 @@ function fillAgentsListAfterSelectScript(scriptName) {
     reqBody.args = scriptsMeta[scriptName]['arguments'];
     if (scriptsMeta[scriptName]['recommendedEncoding'] !== undefined) {
         reqBody.encoding = scriptsMeta[scriptName]['recommendedEncoding'];
+    }
+    if (scriptsMeta[scriptName]['timeout'] !== undefined) {
+        reqBody.timeout = scriptsMeta[scriptName]['timeout'];
     }
 
     $("#ctRequestBody").val(JSON.stringify(reqBody, null, 4));
