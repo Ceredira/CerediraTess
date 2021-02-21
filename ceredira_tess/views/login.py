@@ -12,7 +12,11 @@ def login():
     form = LoginForm(request.form)
     if helpers.validate_form_on_submit(form):
         user = form.get_user()
-        flask_login.login_user(user)
+        if user:
+            if user.check_password(form.password.data):
+                flask_login.login_user(user)
+        else:
+            return redirect(url_for('.ceredira_tess'))
 
     if flask_login.current_user.is_authenticated:
         # if referrer is not None and 'login.html' not in referrer:

@@ -8,7 +8,7 @@ from ceredira_tess.models import relationships
 
 class Agent(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    hostname = db.Column(db.String(128), nullable=False)
+    hostname = db.Column(db.String(128), nullable=False, unique=True)
     description = db.Column(db.Text)
     lock_cause = db.Column(db.Text)
 

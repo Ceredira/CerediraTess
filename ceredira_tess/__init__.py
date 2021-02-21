@@ -1,4 +1,7 @@
 __author__ = 'unixshaman'
+
+import os
+
 from flask import Flask, url_for
 from flask_admin.menu import MenuLink
 from flask_babelex import Babel
@@ -29,8 +32,25 @@ def create_app():
 
     babel = Babel(app, default_locale='ru')
     db.init_app(app)
-
     init_login(app)
+
+    with app.test_request_context():
+        if not os.path.isfile(app.config.get('SQLALCHEMY_DATABASE_URI').replace('sqlite:///', '')):
+            db.create_all()
+
+            admin_role = Role('admin')
+
+            admin_user = User('admin', 'admin')
+            admin_user.add_role(admin_role)
+
+            db.session.add(admin_role)
+            db.session.add(admin_user)
+
+            linux = OperationSystemType('Linux')
+            windows = OperationSystemType('Windows')
+
+            db.session.add_all([linux, windows])
+            db.session.commit()
 
     with app.app_context():
         import flask_admin as admin
