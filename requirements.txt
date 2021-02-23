@@ -11,7 +11,7 @@ future==0.18.2
 itsdangerous==1.1.0
 Jinja2==2.11.2
 loginform==1.2.0
-lxml==4.6.1
+lxml==4.6.2
 MarkupSafe==1.1.1
 packaging==20.4
 pefile==2019.4.18
