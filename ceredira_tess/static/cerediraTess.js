@@ -1,52 +1,5 @@
 var scriptsMeta = {};
 
-$(document).ready(function(){
-    $("#ctScripts").change(function(){
-        fillAgentsListAfterSelectScript(this.value);
-    });
-
-    $("#updateCT").click(function(){
-        fillScriptsList();
-    });
-
-    $("#executeCTRequest").click(function(){
-        if (checkScriptSelected() === true) {
-            if (checkAgentsSelected() === true) {
-                if (checkRequestBody() === true) {
-                    addCTHistoryBlock();
-                }
-            }
-        }
-    });
-
-    $("#setEncodingParam").change(function(){
-        var value = $(this).val();
-        setParamInRequestBody('encoding', value);
-    });
-
-    $("#setTimeoutParam").change(function(){
-        var value = $(this).val();
-        setParamInRequestBody('timeout', parseInt(value, 10));
-    });
-
-    $("#setCredsParam").change(function(){
-        var value = $(this).val();
-        setParamInRequestBody('creds', value);
-    });
-
-    $("#requestParametersDescription").click(function(){
-        showScriptParametersDescription();
-    });
-
-    $("#requestValidation").click(function(){
-        checkRequestBody();
-    });
-
-    if (document.getElementById('username') == null) {
-        fillScriptsList();
-    }
-});
-
 function showScriptParametersDescription() {
     var script = $('#ctScripts').val();
     if (script) {
@@ -72,12 +25,7 @@ function fillScriptsList() {
         contentType: 'application/json; charset=utf-8',
         data: '',
         cache: false,
-//        beforeSend: function (xhr) {
-//            /* Authorization header */
-//            xhr.setRequestHeader('Authorization', getAuth());
-//        },
         success: function (data, status) {
-            // alert("Data: " + data + "\nStatus: " + status);
             scriptsMeta = JSON.parse(data);
 
             var ctScripts = $('#ctScripts');
@@ -86,7 +34,12 @@ function fillScriptsList() {
             for (var key in scriptsMeta) {
                 var op = document.createElement('option');
                 op.setAttribute('value', key);
-                op.text = key + ': ' + scriptsMeta[key].description;
+                if ('exception' in scriptsMeta[key]) {
+                    op.text = key + ': ' + scriptsMeta[key].exception;
+                    op.setAttribute('disabled', 'disabled');
+                } else {
+                    op.text = key + ': ' + scriptsMeta[key].description;
+                }
                 ctScripts.append(op);
             }
         },
@@ -253,10 +206,6 @@ function executeScript(agentsResultRows, scriptName, body) {
             contentType: "application/json; charset=utf-8",
             data: body.replace("{hostname}", agent),
             cache: false,
-//            beforeSend: function (xhr) {
-//                /* Authorization header */
-//                xhr.setRequestHeader("Authorization", auth);
-//            },
             success: function (data, status) {
                 setAgentRowResult(agentResultRowId, status, data, 'success', scriptsMeta[scriptName]['executionCheck']);
             },
@@ -282,3 +231,48 @@ function setParamInRequestBody(param, value) {
     }
     $('#ctRequestBody').val(JSON.stringify(obj, null, 4));
 };
+
+$(document).ready(function(){
+    $("#updateCT").click(function(){
+        fillScriptsList();
+    });
+
+    $("#ctScripts").change(function(){
+        fillAgentsListAfterSelectScript(this.value);
+    });
+
+    $("#executeCTRequest").click(function(){
+        if (checkScriptSelected() === true) {
+            if (checkAgentsSelected() === true) {
+                if (checkRequestBody() === true) {
+                    addCTHistoryBlock();
+                }
+            }
+        }
+    });
+
+    $("#setEncodingParam").change(function(){
+        var value = $(this).val();
+        setParamInRequestBody('encoding', value);
+    });
+
+    $("#setTimeoutParam").change(function(){
+        var value = $(this).val();
+        setParamInRequestBody('timeout', parseInt(value, 10));
+    });
+
+    $("#setCredsParam").change(function(){
+        var value = $(this).val();
+        setParamInRequestBody('creds', value);
+    });
+
+    $("#requestParametersDescription").click(function(){
+        showScriptParametersDescription();
+    });
+
+    $("#requestValidation").click(function(){
+        checkRequestBody();
+    });
+
+    fillScriptsList();
+});

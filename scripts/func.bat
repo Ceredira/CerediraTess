@@ -1,10 +1,10 @@
-@ECHO OFF
-CHCP 65001
+@echo off
+chcp 65001
 
-SET FUNC=%1
-SHIFT /1
-GOTO %FUNC%
+set func=%1
+shift /1
+goto %func%
 
-:WAIT
+:wait
     ping -n %~1 127.0.0.1
-EXIT /B
+exit /b

@@ -1,6 +1,6 @@
 import flask_admin as admin
 import flask_login as login
-from flask import url_for, request, flash
+from flask import url_for, request, flash, abort, current_app
 from flask_admin import expose
 from flask_admin.babel import gettext
 from flask_admin.contrib import sqla
@@ -8,32 +8,16 @@ from flask_admin.form import FormOpts
 from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.model.template import LinkRowAction
+from flask_security.confirmable import requires_confirmation
+from flask_security.forms import Form, NextFormMixin, password_required
+from flask_security.utils import config_value, url_for_security, get_message, _datastore, verify_and_update_password
+from markupsafe import Markup
 from werkzeug.utils import redirect
-from wtforms import form, fields, validators
+from wtforms import form, fields, validators, StringField, PasswordField, BooleanField, SubmitField
 
 from ceredira_tess.db import db
 from ceredira_tess.models.role import Role
 from ceredira_tess.models.user import User
-
-
-class LoginForm(form.Form):
-    username = fields.StringField(validators=[validators.required()])
-    password = fields.PasswordField(validators=[validators.required()])
-
-    def validate_login(self, field):
-        user = self.get_user()
-
-        if user is None:
-            raise validators.ValidationError('Invalid user')
-
-        # we're comparing the plaintext pw with the the hash from the db
-        if not user.check_password(user.password):
-            # to compare plain text passwords use
-            # if user.password != self.password.data:
-            raise validators.ValidationError('Invalid password')
-
-    def get_user(self):
-        return db.session.query(User).filter_by(username=self.username.data).first()
 
 
 class RegistrationForm(form.Form):
@@ -46,24 +30,7 @@ class RegistrationForm(form.Form):
             raise validators.ValidationError('Duplicate username')
 
 
-class MyModelView(sqla.ModelView):
-    column_labels = dict(
-        osname='Имя ОС',
-        rolename='Название роли',
-        hostname='Адрес агента',
-        description='Описание',
-        operationsystemtype='Тип ОС',
-        scripts='Скрипты',
-        agents='Агенты',
-        scriptname='Имя скрипта',
-        username='Имя пользователя',
-        salt='Соль',
-        key='Ключ',
-        roles='Роли',
-        lock_user='Кем заблокировано',
-        lock_cause='Причина блокировки'
-    )
-
+class BaseModelView(sqla.ModelView):
     column_extra_row_actions = [
         LinkRowAction(
             icon_class='fa fa-copy glyphicon glyphicon-duplicate',
@@ -75,9 +42,10 @@ class MyModelView(sqla.ModelView):
     ]
 
     column_hide_backrefs = False
-    # column_list = ('scripts', )
-    # column_details_list = ('scripts', )
     can_view_details = True
+    edit_modal = True
+    create_modal = True
+    details_modal = True
 
     @expose('/duplicate/', methods=('GET', 'POST'))
     def duplicate_view(self):
@@ -138,11 +106,85 @@ class MyModelView(sqla.ModelView):
                            return_url=return_url)
 
     def is_accessible(self):
-        if login.current_user.is_authenticated:
-            if Role.query.filter_by(rolename='admin').first() in login.current_user.roles:
-                return True
+        return (login.current_user.is_active and
+                login.current_user.is_authenticated and
+                login.current_user.has_role('admin')
+                )
 
-        return False
+    def _handle_view(self, name, **kwargs):
+        """
+        Override builtin _handle_view in order to redirect users when a view is not accessible.
+        """
+        if not self.is_accessible():
+            if login.current_user.is_authenticated:
+                # permission denied
+                abort(403)
+            else:
+                return redirect(url_for('security.login', next=request.url))
+
+
+class AgentModelView(BaseModelView):
+    column_labels = dict(
+        hostname='Адрес агента (FQDN)',
+        description='Описание',
+        lock_cause='Причина блокировки',
+        lock_user='Кем заблокировано',
+        operationsystemtype='Тип ОС',
+        scripts='Скрипты',
+        roles='Роли'
+    )
+
+    column_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
+    column_details_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
+
+
+class OperationSystemTypeModelView(BaseModelView):
+    column_labels = dict(
+        osname='Имя ОС'
+    )
+
+    # column_list = ('scripts', )
+    # column_details_list = ('scripts', )
+
+
+class RoleModelView(BaseModelView):
+    column_labels = dict(
+        name='Название роли',
+        description='Описание',
+        agents='Агенты'
+    )
+
+    # column_list = ('scripts', )
+    # column_details_list = ('scripts', )
+
+
+class ScriptModelView(BaseModelView):
+    column_labels = dict(
+        name='Имя скрипта',
+        description='Описание'
+    )
+
+    column_descriptions = dict(
+        name='Путь к исполняемому файлу от каталога scripts'
+    )
+
+    # column_list = ('scripts', )
+    # column_details_list = ('scripts', )
+
+
+class UserModelView(BaseModelView):
+    column_labels = dict(
+        name='Имя пользователя',
+        username='Логин пользователя',
+        email='Почта',
+        created_on='Дата создания',
+        updated_on='Последнее обновление',
+        active='Блокировка',
+        roles='Роли'
+    )
+
+    column_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles')
+    column_details_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles')
 
 
 # Create customized index view class that handles login & registration
@@ -151,5 +193,65 @@ class MyAdminIndexView(admin.AdminIndexView):
     def index(self):
         self._template_args['role'] = Role
         if not login.current_user.is_authenticated:
-            return redirect(url_for('app.login', url=request.url_rule))
+            return redirect(url_for('security.login', url=request.url_rule))
         return super(MyAdminIndexView, self).index()
+
+    @expose('/login/', methods=('GET', 'POST'))
+    def login_page(self):
+        if login.current_user.is_authenticated:
+            return redirect(url_for('.index'))
+        return super(MyAdminIndexView, self).index()
+
+    @expose('/logout/')
+    def logout_page(self):
+        login.logout_user()
+        return redirect(url_for('.index'))
+
+    @expose('/reset/')
+    def reset_page(self):
+        return redirect(url_for('.index'))
+
+
+class LoginForm(Form, NextFormMixin):
+    """Customized login form"""
+
+    username = StringField(validators=[validators.required('Пользователь незарегистрирован')])
+    password = PasswordField(validators=[password_required])
+    remember = BooleanField()
+    submit = SubmitField()
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        if not self.next.data:
+            self.next.data = request.args.get('next', '')
+        self.remember.default = config_value('DEFAULT_REMEMBER_ME')
+        if current_app.extensions['security'].recoverable and \
+                not self.password.description:
+            html = Markup(u'<a href="{url}">{message}</a>'.format(
+                url=url_for_security("forgot_password"),
+                message=get_message("FORGOT_PASSWORD")[0],
+            ))
+            self.password.description = html
+
+    def validate(self):
+        if not super(LoginForm, self).validate():
+            return False
+
+        self.user = _datastore.get_user(self.username.data)
+
+        if self.user is None:
+            self.username.errors.append('Пользователь не зарегистрирован')
+            return False
+        if not self.user.password:
+            self.password.errors.append(get_message('PASSWORD_NOT_SET')[0])
+            return False
+        if not verify_and_update_password(self.password.data, self.user):
+            self.password.errors.append(get_message('INVALID_PASSWORD')[0])
+            return False
+        if requires_confirmation(self.user):
+            self.email.errors.append(get_message('CONFIRMATION_REQUIRED')[0])
+            return False
+        if not self.user.is_active:
+            self.email.errors.append(get_message('DISABLED_ACCOUNT')[0])
+            return False
+        return True

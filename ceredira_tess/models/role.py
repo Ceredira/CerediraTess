@@ -1,14 +1,17 @@
+from flask_security import RoleMixin
+
 from ceredira_tess.db import db
 from ceredira_tess.models import relationships
 
 
-class Role(db.Model):
+class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    rolename = db.Column(db.String(64), nullable=False, unique=True)
-    agents = db.relationship("Agent", secondary=relationships.role_agents, back_populates='roles')
+    name = db.Column(db.String(64), nullable=False, unique=True)
+    description = db.Column(db.String(255))
+    agents = db.relationship("Agent", secondary=relationships.roles_agents, back_populates='roles')
 
     def __repr__(self):
-        return f'{self.rolename}'
+        return f'{self.name}'
 
-    def __init__(self, rolename):
-        self.rolename = rolename
+    def __init__(self, name):
+        self.name = name

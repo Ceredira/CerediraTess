@@ -17,6 +17,37 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
+    ################
+    # Flask-Security
+    ################
+
+    # URLs
+    SECURITY_URL_PREFIX = "/"
+    SECURITY_LOGIN_URL = "/login/"
+    SECURITY_LOGOUT_URL = "/logout/"
+    SECURITY_POST_LOGIN_VIEW = "/"
+    SECURITY_POST_LOGOUT_VIEW = "/"
+    SECURITY_POST_REGISTER_VIEW = "/"
+
+    # Включает регистрацию
+    SECURITY_REGISTERABLE = False
+    SECURITY_REGISTER_URL = "/register/"
+    SECURITY_SEND_REGISTER_EMAIL = False
+
+    # Включет сброс пароля
+    SECURITY_RECOVERABLE = True
+    SECURITY_RESET_URL = "/reset/"
+    SECURITY_SEND_PASSWORD_RESET_EMAIL = False
+
+    # Включает изменение пароля
+    SECURITY_CHANGEABLE = True
+    SECURITY_CHANGE_URL = "/change/"
+    SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
+
+    SECURITY_USER_IDENTITY_ATTRIBUTES = 'username'
+    SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
+    SECURITY_PASSWORD_SALT = os.environ.get('CT_SECURITY_PASSWORD_SALT') or '210853635775369807482681431501385084239'
+
 
 class ProductionConfig(Config):
     DEBUG = False

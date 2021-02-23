@@ -1,8 +1,8 @@
-@ECHO OFF
+@echo off
 
-CHCP 65001
+chcp 65001
 
-REM SCRIPT ENCODING: utf-8
-REM SCRIPT DESCRIPTION: Получить список глобальных переменных среды
+rem script encoding: utf-8
+rem script description: Получить список глобальных переменных среды
 
-SET
+set

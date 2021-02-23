@@ -1,14 +1,14 @@
-CHCP 65001
+chcp 65001
 
-ECHO ASDF
+echo asdf
 
-REM CALL %~dp0\func.bat
+rem call %~dp0\func.bat
 
 
 
-ECHO ASDF
-CALL %~dp0\func.bat :WAIT 5
-ECHO ASDF
-CALL %~dp0\func.bat :WAIT 2
-ECHO ASDF
+echo asdf
+call %~dp0\func.bat :wait 5
+echo asdf
+call %~dp0\func.bat :wait 2
+echo asdf
 

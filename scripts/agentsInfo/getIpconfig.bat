@@ -1,8 +1,8 @@
-@ECHO OFF
+@echo off
 
-CHCP 866
+chcp 866
 
-REM SCRIPT ENCODING: 866
-REM SCRIPT DESCRIPTION: Получить информацию по сетям
+rem script encoding: 866
+rem script description: Получить информацию по сетям
 
-IPCONFIG
+ipconfig

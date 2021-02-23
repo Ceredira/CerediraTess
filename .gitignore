@@ -156,3 +156,7 @@ cython_debug/
 .idea/uiDesigner.xml
 
 .idea/
+
+
+# DB files
+*.db

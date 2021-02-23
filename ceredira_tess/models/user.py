@@ -1,5 +1,6 @@
-import hashlib
-import os
+from datetime import datetime
+
+from flask_security.utils import verify_password, hash_password
 
 from ceredira_tess.db import db
 from ceredira_tess.models import relationships
@@ -7,16 +8,21 @@ from ceredira_tess.models import relationships
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String)
     username = db.Column(db.String(64), nullable=False, unique=True)
-    salt = db.Column(db.String(64))
-    key = db.Column(db.String(64))
-    roles = db.relationship("Role", secondary=relationships.user_roles)
+    email = db.Column(db.String, unique=True)
+    created_on = db.Column(db.DateTime(), default=datetime.utcnow)
+    updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
+    password = db.Column(db.String(64))
+    active = db.Column(db.Boolean())
+    roles = db.relationship("Role", secondary=relationships.roles_users, backref=db.backref('users', lazy='dynamic'))
 
     def __repr__(self):
-        return f'{self.username} {self.roles}'
+        return f'{self.username}'
 
-    def __init__(self, username, password):
+    def __init__(self, username, email, password):
         self.username = username
+        self.email = email
         self.set_password(password)
 
     def add_role(self, role):
@@ -26,17 +32,12 @@ class User(db.Model):
         self.roles.extend(roles)
 
     def set_password(self, password):
-        salt_binary = os.urandom(32)  # A new salt for this user
-        self.salt = salt_binary.hex()
-        self.key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt_binary, 10000).hex()
+        self.password = hash_password(password)
 
     def check_password(self, password):
-        if self.key and self.salt and password:
-            new_key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), bytes.fromhex(self.salt), 10000).hex()
-            if self.key == new_key:
-                return True
-        return False
+        return verify_password(password, self.password)
 
+    # Flask - Login
     @property
     def is_authenticated(self):
         return True
@@ -51,6 +52,10 @@ class User(db.Model):
 
     def get_id(self):
         return self.id
+
+    # Flask-Security
+    def has_role(self, *args):
+        return set(args).issubset({role.name for role in self.roles})
 
     # Required for administrative interface
     def __unicode__(self):

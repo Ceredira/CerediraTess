@@ -18,7 +18,7 @@
                     </a>
                 </li>
                 {% if current_user.is_authenticated %}
-                    {% if role.query.filter_by(rolename='admin').first() in current_user.roles %}
+                    {% if role.query.filter_by(name='admin').first() in current_user.roles %}
                         <li class="nav-item dropdown {{ 'active' if from_page == 'admin' }}">
                             <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Администрирование
@@ -37,13 +37,10 @@
                 {% endif %}
             </ul>
             {% if current_user.is_authenticated %}
-                <div class="btn-group pull-left">
-                    <a class="btn dropdown-toggle btn-link" data-toggle="dropdown" href="#">
-                        {{ current_user.username }}
+                <div class="btn-group pull-right">
+                    <a class="btn btn-link" href="{{ url_for('security.logout') }}">
+                        {{ current_user.username }} - Выход
                     </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('app.logout') }}">Выход</a></li>
-                    </ul>
                 </div>
             {% endif %}
         </div>

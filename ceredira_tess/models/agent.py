@@ -18,11 +18,18 @@ class Agent(db.Model):
     operationsystemtype_id = db.Column(db.Integer, db.ForeignKey('operation_system_type.id'),
                                        nullable=False)
     operationsystemtype = db.relationship('OperationSystemType', backref=db.backref('agents', lazy='dynamic'))
-    scripts = db.relationship('Script', secondary=relationships.agent_scripts)
-    roles = db.relationship("Role", secondary=relationships.role_agents, back_populates='agents')
+    scripts = db.relationship('Script', secondary=relationships.agents_scripts)
+    roles = db.relationship("Role", secondary=relationships.roles_agents, back_populates='agents')
 
     def __repr__(self):
-        return f'{self.hostname} {self.operationsystemtype.osname}'
+        return f'{self.hostname}'
+
+    def __init__(self, hostname, operationsystemtype):
+        self.hostname = hostname
+        self.operationsystemtype = operationsystemtype
+
+    def add_role(self, role):
+        self.roles.append(role)
 
     def lock(self, lock_user, lock_cause):
         list_of_agents = [agent for x in lock_user.roles for agent in x.agents]

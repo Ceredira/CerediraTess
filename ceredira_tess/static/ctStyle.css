@@ -20,3 +20,6 @@ body {
 .width-fit-content {
     max-width: fit-content;
 }
+.row {
+    margin: initial;
+}

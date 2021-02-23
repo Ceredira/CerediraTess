@@ -1,8 +1,8 @@
-@ECHO OFF
+@echo off
 
-CHCP 65001
+chcp 65001
 
-REM SCRIPT ENCODING: 866
-REM SCRIPT DESCRIPTION: Получить список общедоступных каталогов (шар)
+rem script encoding: 866
+rem script description: Получить список общедоступных каталогов (шар)
 
-NET SHARE
+net share

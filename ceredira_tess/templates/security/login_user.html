@@ -1,0 +1,54 @@
+{% extends './ct_layout.html' %}
+
+{% block title %}
+Вход в систему
+{% endblock %}
+
+{% block body %}
+    {{ layout.main_menu('') }}
+
+    <div class="container">
+        <div class="row">
+            <div class="col text-center">
+                <h4><b>Вход в систему</b></h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+            </div>
+            <div class="col-10">
+                <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+
+                    {{ login_user_form.hidden_tag() if login_user_form.hidden_tag }}
+                    {{ login_user_form.csrf_token }}
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Логин</span>
+                        </div>
+                        {{ render_field_with_errors(login_user_form.username, class_="form-control") }}
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Пароль</span>
+                        </div>
+                        {{ render_field_with_errors(login_user_form.password, class_="form-control") }}
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                {{ render_field_with_errors(login_user_form.remember) }}
+                            </div>
+                        </div>
+                        <span class="form-control">Запомнить меня</span>
+                    </div>
+
+                    {{ render_field(login_user_form.next) }}
+                    {{ render_field(login_user_form.submit, class_="btn btn-primary", value="Войти") }}
+                    {{ link | safe }}
+                </form>
+            </div>
+            <div class="col">
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,65 +1,65 @@
-@ECHO OFF
-REM Отключить вывод выполняемых команд
+@echo off
+rem Отключить вывод выполняемых команд
 
-ECHO Изменить кодировку на UTF-8
-CHCP 65001
+echo Изменить кодировку на UTF-8
+chcp 65001
 
-REM Объявление глобальных переменных
+rem Объявление глобальных переменных
 
-REM Путь к репозиторию с дистрибутивами
-REM \\192.168.1.5\share
-SET pathToSecuredShare=\\192.168.1.5\share
-
-
-REM SCRIPT DESCRIPTION: Скрипт для установки клиента Git
-REM SCRIPT DESCRIPTION: Пример запуска: createOrUpdateGit.bat "PortableGit.7z" "C:\DevOpsAT\Git\"
+rem Путь к репозиторию с дистрибутивами
+rem \\192.168.1.5\share
+set pathToSecuredShare=\\192.168.1.5\share
 
 
-ECHO.
-ECHO Аргументы запуска:
+rem script description: Скрипт для установки клиента Git
+rem script description: Пример запуска: createOrUpdateGit.bat "PortableGit.7z" "C:\DevOpsAT\Git\"
 
-REM ARG DESCRIPTION: Название архива, содержащего пакет Git для установки
-REM ARG EXAMPLE: PortableGit.7z
-SET portableGitArchive=%pathToSecuredShare:"=%\%~1
-ECHO Название архива с дистрибутивом: %portableGitArchive%
 
-REM ARG DESCRIPTION: Путь установки клиента Git
-REM ARG EXAMPLE: C:\DevOpsAT\Git\
-SET pathToInstallGit=%~2
-ECHO Путь установки клиента Git: %pathToInstallGit%
+echo.
+echo Аргументы запуска:
 
-REM ARG DESCRIPTION: Тип установки, если REINSTALL, то удалит существующую сборку и установит заново
-REM ARG EXAMPLE: REINSTALL
-SET installType=%~3
-ECHO Тип установки: %installType%
+rem arg description: Название архива, содержащего пакет Git для установки
+rem arg example: PortableGit.7z
+set portableGitArchive=%pathToSecuredShare:"=%\%~1
+echo Название архива с дистрибутивом: %portableGitArchive%
 
-ECHO.
-ECHO Завершение программ, мешающих установке.
-ECHO Если выводится ошибка not found, значит программа не запущена - это не ошибка.
-TASKKILL /F /IM bash.exe /T
-TASKKILL /F /IM git.exe /T
-TASKKILL /F /IM sh.exe /T
+rem arg description: Путь установки клиента Git
+rem arg example: C:\DevOpsAT\Git\
+set pathToInstallGit=%~2
+echo Путь установки клиента Git: %pathToInstallGit%
 
-ECHO.
-ECHO Если указана опция REINSTALL, то удалить каталог с текущей версией Git, если он существует
-IF "%installType%" EQU "REINSTALL" (
-    IF EXIST "%pathToInstallGit%\" (
-        ECHO Удаление каталога %pathToInstallGit%
-        RMDIR /Q /S "%pathToInstallGit%"
-    ) ELSE (
-        ECHO Каталог %pathToInstallGit% уже удален
+rem arg description: Тип установки, если reinstall, то удалит существующую сборку и установит заново
+rem arg example: reinstall
+set installType=%~3
+echo Тип установки: %installType%
+
+echo.
+echo Завершение программ, мешающих установке.
+echo Если выводится ошибка not found, значит программа не запущена - это не ошибка.
+taskkill /f /im bash.exe /t
+taskkill /f /im git.exe /t
+taskkill /f /im sh.exe /t
+
+echo.
+echo Если указана опция reinstall, то удалить каталог с текущей версией Git, если он существует
+if "%installType%" equ "reinstall" (
+    if exist "%pathToInstallGit%\" (
+        echo Удаление каталога %pathToInstallGit%
+        rmdir /q /s "%pathToInstallGit%"
+    ) else (
+        echo Каталог %pathToInstallGit% уже удален
     )
 )
 
-ECHO.
-ECHO Если исполняемый файл %pathToInstallGit%\bin\git.exe существует, то считаем что с дистрибутив уже установлен!
-REM При необходимости, можно добавить более тонкие проверки.
-IF EXIST "%pathToInstallGit%\bin\git.exe" (
-    ECHO GIT ALREADY INSTALLED!!!
-) ELSE (
-    MKDIR "%pathToInstallGit%"
-    ECHO Распаковка дистрибутива %portableGitArchive% в каталог %pathToInstallGit%
-    "%pathToSecuredShare:"=%\7-Zip\7z.exe" x "%portableGitArchive%" -o"%pathToInstallGit%" -y && ECHO GIT INSTALL PASSED!!!
+echo.
+echo Если исполняемый файл %pathToInstallGit%\bin\git.exe существует, то считаем что с дистрибутив уже установлен!
+rem При необходимости, можно добавить более тонкие проверки.
+if exist "%pathToInstallGit%\bin\git.exe" (
+    echo GIT ALREADY INSTALLED!!!
+) else (
+    mkdir "%pathToInstallGit%"
+    echo Распаковка дистрибутива %portableGitArchive% в каталог %pathToInstallGit%
+    "%pathToSecuredShare:"=%\7-Zip\7z.exe" x "%portableGitArchive%" -o"%pathToInstallGit%" -y && echo GIT INSTALL PASSED!!!
 )
 
-REM SCRIPT CHECKING: GIT INSTALL PASSED!!! || GIT ALREADY INSTALLED!!!
+rem script checking: GIT INSTALL PASSED!!! || GIT ALREADY INSTALLED!!!

@@ -32,7 +32,7 @@ def execute_script(script_name):
 
     # Проверка допустимости выполнения указанного скрипта на выбранном агенте
     # if script_name not in agent.scripts:
-    if not [script for script in agent.scripts if script.scriptname == script_name]:
+    if not [script for script in agent.scripts if script.name == script_name]:
         return f'Script {script_name} not available for execution on host {hostname}', 403
 
     res = agent.execute_script_with_timeout(BASEDIR, script_name,

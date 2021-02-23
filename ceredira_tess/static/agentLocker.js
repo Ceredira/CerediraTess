@@ -1,35 +1,3 @@
-$(document).ready(function(){
-    $("#updateCT").click(function(){
-        //if (checkAuth() === true) {
-            fillAgentsStatusList();
-        //}
-    });
-
-    $("#agentsLock").click(function(){
-        //if (checkAuth() === true) {
-            if (checkCauseSelected() === true) {
-                if (checkAgentsSelected() === true) {
-                    addCTLockingBlock();
-                }
-            }
-        //}
-    });
-
-    $("#agentsUnlock").click(function(){
-        //if (checkAuth() === true) {
-            if (checkCauseSelected() === true) {
-                if (checkAgentsSelected() === true) {
-                    addCTUnlockingBlock();
-                }
-            }
-        //}
-    });
-
-    if (document.getElementById('username') == null) {
-        fillAgentsStatusList();
-    }
-});
-
 function fillAgentsStatusList() {
     $.ajax({
         url: 'agentsStatus',
@@ -37,10 +5,6 @@ function fillAgentsStatusList() {
         contentType: 'application/json; charset=utf-8',
         data: '{}',
         cache: false,
-//        beforeSend: function (xhr) {
-//            /* Authorization header */
-//            xhr.setRequestHeader('Authorization', getAuth());
-//        },
         success: function (data, status) {
             agentsStatus = JSON.parse(data);
 
@@ -192,10 +156,6 @@ function agentsLocking(agentsResultRow, agents, auth, cause) {
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(body, null, 4),
         cache: false,
-//        beforeSend: function (xhr) {
-//            /* Authorization header */
-//            xhr.setRequestHeader('Authorization', auth);
-//        },
         success: function (data, status) {
             setAgentRowResult(agentsResultRow, status, data, 'success');
         },
@@ -223,10 +183,6 @@ function agentsUnlocking(agentsResultRow, agents, auth, cause) {
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(body, null, 4),
         cache: false,
-//        beforeSend: function (xhr) {
-//            /* Authorization header */
-//            xhr.setRequestHeader('Authorization', auth);
-//        },
         success: function (data, status) {
             setAgentRowResult(agentsResultRow, status, data, 'success');
         },
@@ -235,3 +191,27 @@ function agentsUnlocking(agentsResultRow, agents, auth, cause) {
         }
     });
 };
+
+$(document).ready(function(){
+    $("#updateCT").click(function(){
+        fillAgentsStatusList();
+    });
+
+    $("#agentsLock").click(function(){
+        if (checkCauseSelected() === true) {
+            if (checkAgentsSelected() === true) {
+                addCTLockingBlock();
+            }
+        }
+    });
+
+    $("#agentsUnlock").click(function(){
+        if (checkCauseSelected() === true) {
+            if (checkAgentsSelected() === true) {
+                addCTUnlockingBlock();
+            }
+        }
+    });
+
+    fillAgentsStatusList();
+});

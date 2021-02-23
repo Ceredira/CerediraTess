@@ -1,9 +1,9 @@
-@ECHO OFF
-CHCP 65001
+@echo off
+chcp 65001
 
-ECHO asdf
-ECHO asdf
-ECHO asdf
-ECHO %1
+echo asdf
+echo asdf
+echo asdf
+echo %1
 
-ECHO Привет, как дела. Добрый
+echo привет, как дела. добрый

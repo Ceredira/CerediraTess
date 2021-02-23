@@ -1,14 +1,14 @@
-@ECHO OFF
+@echo OFF
 
-CHCP 65001
+chcp 65001
 
-REM SCRIPT ENCODING: utf-8
-REM SCRIPT DESCRIPTION: Получить список групп и пользователей в группах
+rem script encoding: 866
+rem script description: Получить список групп и пользователей в группах
 
-NET LOCALGROUP
+net localgroup
 
-NET LOCALGROUP Администраторы
-NET LOCALGROUP Пользователи
+net localgroup Администраторы
+net localgroup Пользователи
 
-NET LOCALGROUP Administrators
-NET LOCALGROUP Users
+net localgroup Administrators
+net localgroup Users
