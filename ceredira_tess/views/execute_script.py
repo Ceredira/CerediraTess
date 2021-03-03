@@ -1,13 +1,13 @@
 import flask_login as login
 from flask import request
-from flask_login import login_required
+from flask_security.decorators import auth_required
 
 from ceredira_tess.commons import app
 from config import BASEDIR
 
 
-@app.route('/executeScript/<path:script_name>', methods=['POST'])
-@login_required
+@app.route('/executeScript/<path:script_name>', methods=['POST'], endpoint='executeScript')
+@auth_required('session', 'token', 'basic')
 def execute_script(script_name):
     js_receive = request.get_json()
     args = js_receive.get('args', [])

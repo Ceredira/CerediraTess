@@ -3,14 +3,14 @@ import os
 import re
 
 import flask_login as login
-from flask_login import login_required
+from flask_security.decorators import auth_required
 
 from ceredira_tess.commons import app
 from config import BASEDIR
 
 
-@app.route('/getAvailableScripts', methods=['POST'])
-@login_required
+@app.route('/getAvailableScripts', methods=['POST'], endpoint='getAvailableScripts')
+@auth_required('session', 'token', 'basic')
 def get_available_scripts():
     def parse_script_metadata(root_path, script):
         try:

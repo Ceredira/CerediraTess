@@ -1,6 +1,5 @@
 import flask_admin as admin
-import flask_login as login
-from flask import url_for, request, flash, abort, current_app
+from flask import url_for, request, flash, abort, current_app, redirect
 from flask_admin import expose
 from flask_admin.babel import gettext
 from flask_admin.contrib import sqla
@@ -9,10 +8,10 @@ from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.model.template import LinkRowAction
 from flask_security.confirmable import requires_confirmation
-from flask_security.forms import Form, NextFormMixin, password_required
-from flask_security.utils import config_value, url_for_security, get_message, _datastore, verify_and_update_password
+from flask_security.forms import Form, NextFormMixin, password_required, _security
+from flask_security.utils import config_value, url_for_security, get_message, hash_password, find_user, current_user,\
+    logout_user
 from markupsafe import Markup
-from werkzeug.utils import redirect
 from wtforms import form, fields, validators, StringField, PasswordField, BooleanField, SubmitField
 
 from ceredira_tess.db import db
@@ -106,9 +105,9 @@ class BaseModelView(sqla.ModelView):
                            return_url=return_url)
 
     def is_accessible(self):
-        return (login.current_user.is_active and
-                login.current_user.is_authenticated and
-                login.current_user.has_role('admin')
+        return (current_user.is_active and
+                current_user.is_authenticated and
+                current_user.has_role('admin')
                 )
 
     def _handle_view(self, name, **kwargs):
@@ -116,7 +115,7 @@ class BaseModelView(sqla.ModelView):
         Override builtin _handle_view in order to redirect users when a view is not accessible.
         """
         if not self.is_accessible():
-            if login.current_user.is_authenticated:
+            if current_user.is_authenticated:
                 # permission denied
                 abort(403)
             else:
@@ -192,19 +191,19 @@ class MyAdminIndexView(admin.AdminIndexView):
     @expose('/')
     def index(self):
         self._template_args['role'] = Role
-        if not login.current_user.is_authenticated:
+        if not current_user.is_authenticated:
             return redirect(url_for('security.login', url=request.url_rule))
         return super(MyAdminIndexView, self).index()
 
     @expose('/login/', methods=('GET', 'POST'))
     def login_page(self):
-        if login.current_user.is_authenticated:
+        if current_user.is_authenticated:
             return redirect(url_for('.index'))
         return super(MyAdminIndexView, self).index()
 
     @expose('/logout/')
     def logout_page(self):
-        login.logout_user()
+        logout_user()
         return redirect(url_for('.index'))
 
     @expose('/reset/')
@@ -221,37 +220,48 @@ class LoginForm(Form, NextFormMixin):
     submit = SubmitField()
 
     def __init__(self, *args, **kwargs):
-        super(LoginForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not self.next.data:
-            self.next.data = request.args.get('next', '')
-        self.remember.default = config_value('DEFAULT_REMEMBER_ME')
-        if current_app.extensions['security'].recoverable and \
-                not self.password.description:
-            html = Markup(u'<a href="{url}">{message}</a>'.format(
-                url=url_for_security("forgot_password"),
-                message=get_message("FORGOT_PASSWORD")[0],
-            ))
+            self.next.data = request.args.get("next", "")
+        self.remember.default = config_value("DEFAULT_REMEMBER_ME")
+        if (
+            current_app.extensions["security"].recoverable
+            and not self.password.description
+        ):
+            html = Markup(
+                '<a href="{url}">{message}</a>'.format(
+                    url=url_for_security("forgot_password"),
+                    message=get_message("FORGOT_PASSWORD")[0],
+                )
+            )
             self.password.description = html
+        self.requires_confirmation = False
 
     def validate(self):
-        if not super(LoginForm, self).validate():
+        if not super().validate():
             return False
 
-        self.user = _datastore.get_user(self.username.data)
+        self.user = find_user(self.username.data)
 
         if self.user is None:
-            self.username.errors.append('Пользователь не зарегистрирован')
+            self.username.errors.append(get_message("USER_DOES_NOT_EXIST")[0])
+            # Reduce timing variation between existing and non-existing users
+            hash_password(self.password.data)
             return False
         if not self.user.password:
-            self.password.errors.append(get_message('PASSWORD_NOT_SET')[0])
+            self.password.errors.append(get_message("PASSWORD_NOT_SET")[0])
+            # Reduce timing variation between existing and non-existing users
+            hash_password(self.password.data)
             return False
-        if not verify_and_update_password(self.password.data, self.user):
-            self.password.errors.append(get_message('INVALID_PASSWORD')[0])
+        self.password.data = _security._password_util.normalize(self.password.data)
+        if not self.user.verify_and_update_password(self.password.data):
+            self.password.errors.append(get_message("INVALID_PASSWORD")[0])
             return False
-        if requires_confirmation(self.user):
-            self.email.errors.append(get_message('CONFIRMATION_REQUIRED')[0])
+        self.requires_confirmation = requires_confirmation(self.user)
+        if self.requires_confirmation:
+            self.email.errors.append(get_message("CONFIRMATION_REQUIRED")[0])
             return False
         if not self.user.is_active:
-            self.email.errors.append(get_message('DISABLED_ACCOUNT')[0])
+            self.email.errors.append(get_message("DISABLED_ACCOUNT")[0])
             return False
         return True

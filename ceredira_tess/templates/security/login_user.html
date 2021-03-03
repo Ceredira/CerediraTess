@@ -17,10 +17,12 @@
             <div class="col">
             </div>
             <div class="col-10">
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <spam class="{{ category }}">{{ message }}</spam>
+                    {% endfor %}
                 <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
 
-                    {{ login_user_form.hidden_tag() if login_user_form.hidden_tag }}
-                    {{ login_user_form.csrf_token }}
+                    {{ login_user_form.hidden_tag() }}
                     <div class="input-group input-group-sm mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">Логин</span>
@@ -42,7 +44,7 @@
                         <span class="form-control">Запомнить меня</span>
                     </div>
 
-                    {{ render_field(login_user_form.next) }}
+                    {{ render_field_errors(login_user_form.csrf_token) }}
                     {{ render_field(login_user_form.submit, class_="btn btn-primary", value="Войти") }}
                     {{ link | safe }}
                 </form>

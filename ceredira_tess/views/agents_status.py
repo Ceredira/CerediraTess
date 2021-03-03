@@ -2,7 +2,7 @@ import json
 
 import flask_login as login
 from flask import request
-from flask_login import login_required
+from flask_security.decorators import auth_required
 
 from ceredira_tess.commons import app, agents_locker
 from ceredira_tess.models.agent import Agent
@@ -19,8 +19,8 @@ def encode_agent(o):
         raise TypeError(f'Object of type "{type_name}" is not JSON serializable')
 
 
-@app.route('/agentsStatus', methods=['POST'])
-@login_required
+@app.route('/agentsStatus', methods=['POST'], endpoint='agentsStatus')
+@auth_required('session', 'token', 'basic')
 def agents_status():
     user = login.current_user
 

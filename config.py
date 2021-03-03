@@ -1,9 +1,16 @@
 import os
 
+import bleach as bleach
+
 BASEDIR = os.environ.get('CT_BASEDIR') or os.path.abspath(os.path.dirname(__file__))
 
 
 class Config(object):
+
+    def uia_username_mapper(identity):
+        # we allow pretty much anything - but we bleach it.
+        return bleach.clean(identity, strip=True)
+
     CSRF_ENABLED = True
     DEBUG = bool(os.environ.get('CT_DEBUG')) if os.environ.get('CT_DEBUG') else False
     FLASK_ADMIN_SWATCH = 'flatly'
@@ -18,35 +25,40 @@ class Config(object):
     TESTING = False
 
     ################
-    # Flask-Security
+    # Flask-Security-Too
     ################
 
     # URLs
     SECURITY_URL_PREFIX = "/"
-    SECURITY_LOGIN_URL = "/login/"
-    SECURITY_LOGOUT_URL = "/logout/"
+    SECURITY_LOGIN_URL = "/login"
+    SECURITY_LOGOUT_URL = "/logout"
     SECURITY_POST_LOGIN_VIEW = "/"
     SECURITY_POST_LOGOUT_VIEW = "/"
     SECURITY_POST_REGISTER_VIEW = "/"
 
     # Включает регистрацию
     SECURITY_REGISTERABLE = False
-    SECURITY_REGISTER_URL = "/register/"
+    SECURITY_REGISTER_URL = "/register"
     SECURITY_SEND_REGISTER_EMAIL = False
 
     # Включет сброс пароля
     SECURITY_RECOVERABLE = True
-    SECURITY_RESET_URL = "/reset/"
+    SECURITY_RESET_URL = "/reset"
     SECURITY_SEND_PASSWORD_RESET_EMAIL = False
 
     # Включает изменение пароля
     SECURITY_CHANGEABLE = True
-    SECURITY_CHANGE_URL = "/change/"
+    SECURITY_CHANGE_URL = "/change"
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
-    SECURITY_USER_IDENTITY_ATTRIBUTES = 'username'
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}}]
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECURITY_PASSWORD_SALT = os.environ.get('CT_SECURITY_PASSWORD_SALT') or '210853635775369807482681431501385084239'
+    SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS = True
+    SECURITY_REDIRECT_BEHAVIOR = "spa"
+    SECURITY_CSRF_COOKIE = {"key": "XSRF - TOKEN"}
+    WTF_CSRF_CHECK_DEFAULT = False
+    WTF_CSRF_TIME_LIMIT = None
 
 
 class ProductionConfig(Config):
