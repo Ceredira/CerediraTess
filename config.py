@@ -11,7 +11,6 @@ class Config(object):
         # we allow pretty much anything - but we bleach it.
         return bleach.clean(identity, strip=True)
 
-    CSRF_ENABLED = True
     DEBUG = bool(os.environ.get('CT_DEBUG')) if os.environ.get('CT_DEBUG') else False
     FLASK_ADMIN_SWATCH = 'flatly'
     SECRET_KEY = os.environ.get('CT_SECRET_KEY') or 'mysecret'
@@ -29,7 +28,6 @@ class Config(object):
     ################
 
     # URLs
-    SECURITY_URL_PREFIX = "/"
     SECURITY_LOGIN_URL = "/login"
     SECURITY_LOGOUT_URL = "/logout"
     SECURITY_POST_LOGIN_VIEW = "/"
@@ -54,11 +52,6 @@ class Config(object):
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}}]
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECURITY_PASSWORD_SALT = os.environ.get('CT_SECURITY_PASSWORD_SALT') or '210853635775369807482681431501385084239'
-    SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS = True
-    SECURITY_REDIRECT_BEHAVIOR = "spa"
-    SECURITY_CSRF_COOKIE = {"key": "XSRF - TOKEN"}
-    WTF_CSRF_CHECK_DEFAULT = False
-    WTF_CSRF_TIME_LIMIT = None
 
 
 class ProductionConfig(Config):

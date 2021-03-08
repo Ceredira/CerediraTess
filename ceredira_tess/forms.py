@@ -259,9 +259,9 @@ class LoginForm(Form, NextFormMixin):
             return False
         self.requires_confirmation = requires_confirmation(self.user)
         if self.requires_confirmation:
-            self.email.errors.append(get_message("CONFIRMATION_REQUIRED")[0])
+            self.username.errors.append(get_message("CONFIRMATION_REQUIRED")[0])
             return False
         if not self.user.is_active:
-            self.email.errors.append(get_message("DISABLED_ACCOUNT")[0])
+            self.username.errors.append(get_message("DISABLED_ACCOUNT")[0])
             return False
         return True

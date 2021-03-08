@@ -3,13 +3,11 @@ __author__ = 'unixshaman'
 import base64
 import os
 
-from flask import Flask, url_for, _request_ctx_stack
+from flask import Flask, url_for
 from flask_admin import helpers
 from flask_admin.menu import MenuLink
 from flask_babelex import Babel
 from flask_security import SQLAlchemyUserDatastore, Security, hash_password
-from flask_security.core import _security
-from flask_wtf import CSRFProtect
 
 # It's not strictly necessary to import these, but I do it here for PyInstaller
 # (see https://github.com/pyinstaller/pyinstaller/issues/649)
@@ -24,7 +22,6 @@ import passlib.handlers.misc
 from flask_security.utils import set_request_attr
 
 import config
-from flask_login import LoginManager
 from ceredira_tess.db import db
 from ceredira_tess.forms import MyAdminIndexView, LoginForm, UserModelView, RoleModelView, \
     OperationSystemTypeModelView, AgentModelView, ScriptModelView
@@ -49,53 +46,10 @@ def create_app():
     app.config.from_object(config.Config)
 
     db.init_app(app)
-    csrf = CSRFProtect(app)
 
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    # login_manager = LoginManager()
-    # login_manager.init_app(app)
 
     security = Security(app, user_datastore, login_form=LoginForm)
-
-    # # Create user loader function
-    # @login_manager.user_loader
-    # def load_user(user_id):
-    #     return User.query.get(user_id)
-    #
-    # @login_manager.request_loader
-    # def load_user_from_request(request):
-    #     if all(hasattr(_request_ctx_stack.top, k) for k in ["fs_authn_via", "user"]):
-    #         if _request_ctx_stack.top.fs_authn_via == "token":
-    #             return _request_ctx_stack.top.user
-    #
-    #     header_key = _security.token_authentication_header
-    #     args_key = _security.token_authentication_key
-    #     header_token = request.headers.get(header_key, None)
-    #     token = request.args.get(args_key, header_token)
-    #     if request.is_json:
-    #         data = request.get_json(silent=True) or {}
-    #         if isinstance(data, dict):
-    #             token = data.get(args_key, token)
-    #
-    #     try:
-    #         data = _security.remember_token_serializer.loads(
-    #             token, max_age=_security.token_max_age
-    #         )
-    #         if hasattr(_security.datastore.user_model, "fs_token_uniquifier"):
-    #             user = _security.datastore.find_user(fs_token_uniquifier=data[0])
-    #         else:
-    #             user = _security.datastore.find_user(fs_uniquifier=data[0])
-    #         if not user.active:
-    #             user = None
-    #     except Exception:
-    #         user = None
-    #
-    #     if user and user.verify_auth_token(data):
-    #         set_request_attr("fs_authn_via", "token")
-    #         return user
-    #
-    #     return _security.login_manager.anonymous_user()
-
     babel = Babel(app, default_locale='ru')
 
     with app.test_request_context():
