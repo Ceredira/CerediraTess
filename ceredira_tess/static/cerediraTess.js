@@ -113,8 +113,9 @@ function getCTResponseBlock(parentId, agents, executedScript, executedScriptBody
             </tr>
         </table>
     </td>
-    <td class="col-sm-9"><textarea class="form-control" rows="5"></textarea></td>
-</tr>`;
+    <td class="col-sm-9">
+        <textarea name="data" class="form-control" rows="8"></textarea></td>
+    </tr>`;
         agentsNumbering++;
     }
 
@@ -131,8 +132,8 @@ function getCTResponseBlock(parentId, agents, executedScript, executedScriptBody
                         Свернуть/развернуть
                     </button>
                     <button class="btn btn-danger btn-sm" type="button" onclick="$(this).closest('.card').remove();">Удалить</button>
-                    <input type="hidden" value="${btoa(executedScript)}">
-                    <input type="hidden" value="${btoa(executedScriptBody)}">
+                    <input type="hidden" value="${btoa(unescape(encodeURIComponent(executedScript)))}">
+                    <input type="hidden" value="${btoa(unescape(encodeURIComponent(executedScriptBody)))}">
                     <button class="btn btn-primary btn-sm" type="button" onclick="useCurrentRequest(this)">Использовать</button>
                     <label>Результат выполнения скрипта (${getCurrentDateTime()}): ${executedScript}</label>
                 </h5>
@@ -150,8 +151,8 @@ function getCTResponseBlock(parentId, agents, executedScript, executedScriptBody
 };
 
 function useCurrentRequest(useButton) {
-    $('#ctRequestBody').val(atob($(useButton).prev().attr('value')));
-    $('#ctScripts').val(atob($(useButton).prev().prev().attr('value')));
+    $('#ctRequestBody').val(decodeURIComponent(escape(atob($(useButton).prev().attr('value')))));
+    $('#ctScripts').val(decodeURIComponent(escape(atob($(useButton).prev().prev().attr('value')))));
 };
 
 function setAgentRowResult(agentResultRowId, status, data, result, executionCheck) {
@@ -164,8 +165,8 @@ function setAgentRowResult(agentResultRowId, status, data, result, executionChec
             agentRow.addClass('ct-table-row-error');
         }
 
-        $(agentRow.children()[1].children[0]).val(data);
         agentRow.find("td[name='status']")[0].innerHTML = getCurrentDateTime() + ": " + status;
+        agentRow.find("textarea[name='data']").val(data);
 
         var responseCheckingResult = true;
         for (var logicalAnd of executionCheck) {

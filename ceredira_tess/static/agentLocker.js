@@ -32,7 +32,7 @@ function fillAgentsStatusList() {
 };
 
 function useCurrentLockCause(useButton) {
-    $('#ctCause').val(atob($(useButton).prev().attr('value')));
+    $('#ctCause').val(decodeURIComponent(escape(atob($(useButton).prev().attr('value')))));
 };
 
 function getCTLockingBlock(parentId, agents, cause, lockOrUnlock) {
@@ -42,10 +42,8 @@ function getCTLockingBlock(parentId, agents, cause, lockOrUnlock) {
     var table = `<table class="table table-bordered">
         <thead>
             <tr class="d-flex">
-                <th class="col-2">Агенты</th>
-                <th class="col-2">Статус</th>
-                <th class="col-6">Результат блокировки</th>
-                <th class="col-6">Проверка</th>
+                <th class="col-3">Информация</th>
+                <th class="col-9">Результат</th>
             <tr>
         </thead>
         <tbody>
@@ -54,12 +52,25 @@ function getCTLockingBlock(parentId, agents, cause, lockOrUnlock) {
     var rowUID = uuidv4();
     var agentsResultRow = rowUID;
     table += `<tr class="d-flex" id=${rowUID}>
-        <td class="col-sm-2">${agents.join('; ')}</td>
-        <td class="col-sm-2"><div class="spinner-border" role="status"></div></td>
-        <td class="col-sm-6"></td>
-        <td class="col-sm-2"></td>
-    </tr>
-    `;
+    <td class="col-sm-3">
+        <table class="table table-bordered">
+            <tr>
+                <th scope="row">Агенты</th>
+                <td name="number">${agents.join('; ')}</td>
+            </tr>
+            <tr>
+                <th scope="row">Статус</th>
+                <td name="status"><div class="spinner-border" role="status"></td>
+            </tr>
+            <tr>
+                <th scope="row">Проверка</th>
+                <td name="check"></td>
+            </tr>
+        </table>
+    </td>
+    <td class="col-sm-9">
+        <textarea name="data" class="form-control" rows="8"></textarea></td>
+    </tr>`;
 
     table += `
         </tbody>
@@ -81,7 +92,7 @@ function getCTLockingBlock(parentId, agents, cause, lockOrUnlock) {
                         Свернуть/развернуть
                     </button>
                     <button class="btn btn-danger btn-sm" type="button" onclick="$(this).closest('.card').remove();">Удалить</button>
-                    <input type="hidden" value="${btoa(cause)}">
+                    <input type="hidden" value="${btoa(unescape(encodeURIComponent(cause)))}">
                     <button class="btn btn-primary btn-sm" type="button" onclick="useCurrentLockCause(this)">Использовать</button>
                     <label>${blockTitle} (${getCurrentDateTime()}): ${cause}</label>
                 </h5>
@@ -117,8 +128,8 @@ function setAgentRowResult(agentResultRowId, status, data, result) {
             agentRow.addClass('ct-table-row-error');
         }
 
-        $(agentRow.children()[1]).html(getCurrentDateTime() + ': ' + status);
-        $(agentRow.children()[2]).html(data);
+        agentRow.find("td[name='status']")[0].innerHTML = getCurrentDateTime() + ": " + status;
+        agentRow.find("textarea[name='data']").val(data);
 
         var responseCheckingResult = false;
         var regex = new RegExp('"result": true', 'i');
@@ -126,12 +137,14 @@ function setAgentRowResult(agentResultRowId, status, data, result) {
             responseCheckingResult = true;
         }
 
+        var checkElem = agentRow.find("td[name='check']");
+
         if (responseCheckingResult) {
-            $(agentRow.children()[3]).addClass('ct-response-check-success');
-            $(agentRow.children()[3]).html('SUCCESS');
+            $(checkElem).addClass('ct-response-check-success');
+            $(checkElem).html('SUCCESS');
         } else {
-            $(agentRow.children()[3]).addClass('ct-response-check-error');
-            $(agentRow.children()[3]).html('FAILED');
+            $(checkElem).addClass('ct-response-check-error');
+            $(checkElem).html('FAILED');
         }
 
         fillAgentsStatusList();
@@ -141,10 +154,10 @@ function setAgentRowResult(agentResultRowId, status, data, result) {
 function addCTLockingBlock() {
     var requestDict = getCTLockingBlock('#CTLockingHistory', $('#ctAgents').val(), $('#ctCause').val(), 'lock');
     $('#CTLockingHistory').prepend(requestDict['tableHTML']);
-    agentsLocking(requestDict['agentsResultRow'], $('#ctAgents').val(), getAuth(), $('#ctCause').val());
+    agentsLocking(requestDict['agentsResultRow'], $('#ctAgents').val(), $('#ctCause').val());
 };
 
-function agentsLocking(agentsResultRow, agents, auth, cause) {
+function agentsLocking(agentsResultRow, agents, cause) {
     let body = {
          'hostnames': agents,
          'lockCause': cause
@@ -168,10 +181,10 @@ function agentsLocking(agentsResultRow, agents, auth, cause) {
 function addCTUnlockingBlock() {
     var requestDict = getCTLockingBlock('#CTLockingHistory', $('#ctAgents').val(), $('#ctCause').val(), 'unlock');
     $('#CTLockingHistory').prepend(requestDict['tableHTML']);
-    agentsUnlocking(requestDict['agentsResultRow'], $('#ctAgents').val(), getAuth(), $('#ctCause').val());
+    agentsUnlocking(requestDict['agentsResultRow'], $('#ctAgents').val(), $('#ctCause').val());
 };
 
-function agentsUnlocking(agentsResultRow, agents, auth, cause) {
+function agentsUnlocking(agentsResultRow, agents, cause) {
     let body = {
          'hostnames': agents,
          'lockCause': cause

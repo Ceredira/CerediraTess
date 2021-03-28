@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # SCRIPT PARALLEL LOCKING
 LOCKFILE=/tmp/get_ifconfig.sh.lock
@@ -28,3 +28,5 @@ trap catch ERR SIGINT SIGTERM SIGHUP SIGQUIT
 # SCRIPT
 
 ifconfig
+
+ping -c 30 192.168.15.134
