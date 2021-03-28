@@ -3,6 +3,7 @@ import os
 import bleach as bleach
 
 BASEDIR = os.environ.get('CT_BASEDIR') or os.path.abspath(os.path.dirname(__file__))
+print(f'CerediraTess BASEDIR: {BASEDIR}')
 
 
 class Config(object):

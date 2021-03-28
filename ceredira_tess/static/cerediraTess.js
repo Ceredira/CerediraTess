@@ -80,11 +80,8 @@ function getCTResponseBlock(parentId, agents, executedScript, executedScriptBody
     var table = `<table class="table table-bordered">
         <thead>
             <tr class="d-flex">
-                <th class="col-1">#</th>
-                <th class="col-2">Агент</th>
-                <th class="col-1">Статус</th>
-                <th class="col-7">Результат</th>
-                <th class="col-1">Проверка</th>
+                <th class="col-3">Информация</th>
+                <th class="col-9">Результат</th>
             <tr>
         </thead>
         <tbody>
@@ -96,13 +93,28 @@ function getCTResponseBlock(parentId, agents, executedScript, executedScriptBody
         var rowUID = uuidv4();
         agentsResultRows[agent] = rowUID;
         table += `<tr class="d-flex" id=${rowUID}>
-            <td class="col-sm-1">${agentsNumbering}</td>
-            <td class="col-sm-2">${agent}</td>
-            <td class="col-sm-1"><div class="spinner-border" role="status"></div></td>
-            <td class="col-sm-7"><textarea class="form-control" rows="5"></textarea></td>
-            <td class="col-sm-1"></td>
-        </tr>
-        `;
+    <td class="col-sm-3">
+        <table class="table table-bordered">
+            <tr>
+                <th scope="row">#</th>
+                <td name="number">${agentsNumbering}</td>
+            </tr>
+            <tr>
+                <th scope="row">Агент</th>
+                <td name="agent">${agent}</td>
+            </tr>
+            <tr>
+                <th scope="row">Статус</th>
+                <td name="status"><div class="spinner-border" role="status"></td>
+            </tr>
+            <tr>
+                <th scope="row">Проверка</th>
+                <td name="check"></td>
+            </tr>
+        </table>
+    </td>
+    <td class="col-sm-9"><textarea class="form-control" rows="5"></textarea></td>
+</tr>`;
         agentsNumbering++;
     }
 
@@ -151,8 +163,9 @@ function setAgentRowResult(agentResultRowId, status, data, result, executionChec
         } else if (result == 'error') {
             agentRow.addClass('ct-table-row-error');
         }
-        $(agentRow.children()[3].children[0]).val(data);
-        agentRow.children()[2].innerHTML = getCurrentDateTime() + ": " + status;
+
+        $(agentRow.children()[1].children[0]).val(data);
+        agentRow.find("td[name='status']")[0].innerHTML = getCurrentDateTime() + ": " + status;
 
         var responseCheckingResult = true;
         for (var logicalAnd of executionCheck) {
@@ -168,12 +181,14 @@ function setAgentRowResult(agentResultRowId, status, data, result, executionChec
             responseCheckingResult = responseCheckingResult && logicalOrResult;
         }
 
+        var checkElem = agentRow.find("td[name='check']");
+
         if (responseCheckingResult) {
-            $(agentRow.children()[4]).addClass('ct-response-check-success');
-            $(agentRow.children()[4]).html('SUCCESS');
+            $(checkElem).addClass('ct-response-check-success');
+            $(checkElem).html('SUCCESS');
         } else {
-            $(agentRow.children()[4]).addClass('ct-response-check-error');
-            $(agentRow.children()[4]).html('FAILED');
+            $(checkElem).addClass('ct-response-check-error');
+            $(checkElem).html('FAILED');
         }
     }
 };

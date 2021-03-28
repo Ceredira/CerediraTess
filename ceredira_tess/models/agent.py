@@ -128,8 +128,8 @@ class Agent(db.Model):
                 proc.extend(['-P', psexec_options['port']])
 
             proc.extend([self.hostname, '-ssh', '-batch'])
-            proc.extend(args_list)
             proc.extend(['-m', os.path.join(root_path, 'scripts', script)])
+            proc.extend(args_list)
 
         exec_command = ''
         for i in proc:
