@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import traceback
 
 from ceredira_tess.db import db
 from ceredira_tess.models import relationships
@@ -84,16 +85,14 @@ class Agent(db.Model):
             args_list = []
         logger = logging.getLogger("CerediraTess.Agent.execute_script_locally")
 
-        proc = [os.path.join(root_path, 'scripts', script)]
-        proc.extend(args_list)
+        # proc = [os.path.join(root_path, 'scripts', script)]
+        # proc.extend(args_list)
+        proc = r'{}'.format(os.path.join(root_path, 'scripts', script))
 
-        try:
-            output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
-                                             errors='replace')
-        except subprocess.CalledProcessError as grepexc:
-            output = f'Finish with error: {grepexc.returncode}\n\n{grepexc.output}'
-        except Exception as ex:
-            output = f'Exception while execution: {ex}'
+        for i in args_list:
+            proc += r' "{}"'.format(f"{i}".replace('"', '""'))
+
+        output = self.exec_proc(proc, encoding, timeout)
 
         logger.debug(f'Script execution result:\n{output}')
 
@@ -103,39 +102,93 @@ class Agent(db.Model):
                               timeout=60):
         logger = logging.getLogger("CerediraTess.Agent.execute_script_remote")
 
-        if args_list is None:
-            args_list = []
-        if psexec_options is None:
-            psexec_options = {}
+        try:
+            args_list = args_list if not None else []
+            psexec_options = psexec_options if not None else {}
 
-        if self.operationsystemtype.osname == 'Windows':
-            proc = [os.path.join(root_path, 'resources\\psexec.exe')]
-            if 'username' in psexec_options and psexec_options['username'] is not None:
-                proc.extend(['-u', psexec_options['username']])
-            if 'password' in psexec_options and psexec_options['password'] is not None:
-                proc.extend(['-p', psexec_options['password']])
+            if self.operationsystemtype.osname == 'Windows':
+                proc = '{prog} \\\\{hostname} {username} {password} -accepteula -nobanner -f -c {script} {script_args}'.format(
+                    prog=os.path.join(root_path, 'resources\\psexec.exe'),
+                    hostname=self.hostname,
+                    username=f"-u {psexec_options['username']}" if 'username' in psexec_options and psexec_options['username'] is not None else '',
+                    password=f"-p {psexec_options['password']}" if 'password' in psexec_options and psexec_options['password'] is not None else '',
+                    script=os.path.join(root_path, 'scripts', script),
+                    script_args=args_list
+                )
+                output = self.exec_proc(proc, encoding, timeout)
+            else:
+                script_name = script.split('\\')[-1]
+                if 'username' not in psexec_options or psexec_options['username'] is None:
+                    raise Exception("Имя пользователя должно быть обязательно указано в параметре username")
+                if 'password' not in psexec_options or psexec_options['password'] is None:
+                    raise Exception("Пароль пользователя должен быть обязательно указан в параметре password")
 
-            proc.extend([f'\\\\{self.hostname}', '-accepteula', '-nobanner', '-f'])
-            proc.extend(['-c', os.path.join(root_path, 'scripts', script)])
-            proc.extend(args_list)
-        else:
-            proc = [os.path.join(root_path, 'resources\\plink.exe')]
-            if 'username' in psexec_options and psexec_options['username'] is not None:
-                proc.extend(['-l', psexec_options['username']])
-            if 'password' in psexec_options and psexec_options['password'] is not None:
-                proc.extend(['-pw', psexec_options['password']])
-            if 'port' in psexec_options and psexec_options['port'] is not None:
-                proc.extend(['-P', psexec_options['port']])
+                # Скопировать скрипт для выполнения на удаленную машину
+                proc1 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\pscp.exe'),
+                                                psexec_options['port'] if 'port' in psexec_options else None,
+                                                psexec_options['username'], psexec_options['password'],
+                                                '', os.path.join(root_path, 'scripts', script), f"{self.hostname}:/tmp")
+                output = proc1.replace(psexec_options['password'], '*****') + '\n'
+                check_load = self.exec_proc(proc1, encoding, timeout)
+                output += check_load + '\n\n'
+                if ' | 100%' in check_load:
+                    # Указание разрешения на выполнение скрипта на удаленной машине
+                    proc2 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
+                                                    psexec_options['port'] if 'port' in psexec_options else None,
+                                                    psexec_options['username'], psexec_options['password'],
+                                                    self.hostname, 'chmod', f"+x /tmp/{script_name}")
+                    output += proc2.replace(psexec_options['password'], '*****') + '\n'
+                    check_chmod = self.exec_proc(proc2, encoding, timeout)
+                    output += check_chmod + '\n\n'
+                    if not check_chmod:
+                        # Выполнение скрипта на удаленной машине
+                        proc3 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
+                                                        psexec_options['port'] if 'port' in psexec_options else None,
+                                                        psexec_options['username'], psexec_options['password'],
+                                                        self.hostname, f"/tmp/{script_name}", " ".join(args_list))
+                        output += proc3.replace(psexec_options['password'], '*****') + '\n'
+                        output += self.exec_proc(proc3, encoding, timeout) + '\n\n'
 
-            proc.extend([self.hostname, '-ssh', '-batch'])
-            proc.extend(['-m', os.path.join(root_path, 'scripts', script)])
-            proc.extend(args_list)
+                        proc4 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
+                                                        psexec_options['port'] if 'port' in psexec_options else None,
+                                                        psexec_options['username'],
+                                                        psexec_options['password'],
+                                                        self.hostname, 'rm', f"/tmp/{script_name}")
+                        output += proc4.replace(psexec_options['password'], '*****') + '\n'
+                        check_remove = self.exec_proc(proc4, encoding, timeout)
 
-        exec_command = ''
-        for i in proc:
-            exec_command += f'{i} '
-        logger.info(exec_command)
+                        if check_remove != '':
+                            output += f"\nОшибка удаления файла скрипта с удаленной машины: {check_remove}"
+                    else:
+                        print(traceback.format_exc())
+                        raise Exception(f"Не удалось выдать разрешение на выполнение для скрипта на удаленной машине: {output}")
+                else:
+                    print(traceback.format_exc())
+                    raise Exception(f"Не удалось скопировать скрипт на удаленную машину: {output}")
+        except Exception as ex:
+            print(traceback.format_exc())
+            output = f"Не удалось выполнить запуск скрипта на удаленной машине: {ex}"
+            logger.error(output, exc_info=True)
 
+        return output
+
+    def generate_linux_cmd(self, prog, port, username, password, hostname, script, args):
+        cmd = '"{prog}" -P {port} -l "{username}" -pw "{password}" -noagent -2 -4 -batch {hostname} "{script}" {args}'.format(
+            prog=prog,
+            port=port if port is not None else 22,
+            username=username,
+            password=password,
+            script=script,
+            hostname=hostname,
+            args=args
+        )
+        logger = logging.getLogger("CerediraTess.Agent.generate_linux_cmd")
+        logger.info(cmd.replace(f"-pw \"{password}\"", '*****'))
+        return cmd
+
+    def exec_proc(self, proc, encoding, timeout):
+        logger = logging.getLogger("CerediraTess.Agent.exec_proc")
+        logger.info(proc)
         try:
             output = subprocess.check_output(proc, encoding=encoding, timeout=timeout, stderr=subprocess.STDOUT,
                                              errors='replace')
