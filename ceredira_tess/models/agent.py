@@ -107,13 +107,14 @@ class Agent(db.Model):
             psexec_options = psexec_options if not None else {}
 
             if self.operationsystemtype.osname == 'Windows':
-                proc = '{prog} \\\\{hostname} {username} {password} -accepteula -nobanner -f -c {script} {script_args}'.format(
+                proc = '{prog} \\\\{hostname} {username} {password} -accepteula -nobanner {elevated} -f -c {script} {script_args}'.format(
                     prog=os.path.join(root_path, 'resources\\psexec.exe'),
                     hostname=self.hostname,
                     username=f"-u {psexec_options['username']}" if 'username' in psexec_options and psexec_options['username'] is not None else '',
                     password=f"-p {psexec_options['password']}" if 'password' in psexec_options and psexec_options['password'] is not None else '',
+                    elevated="-s" if script in ['aisNalog3Install.bat', 'copyAllureResultsToShare.bat'] else '',
                     script=os.path.join(root_path, 'scripts', script),
-                    script_args=args_list
+                    script_args=" ".join(f'''"{a.replace('"', '""')}"''' for a in args_list)
                 )
                 output = self.exec_proc(proc, encoding, timeout)
             else:
@@ -127,7 +128,7 @@ class Agent(db.Model):
                 proc1 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\pscp.exe'),
                                                 psexec_options['port'] if 'port' in psexec_options else None,
                                                 psexec_options['username'], psexec_options['password'],
-                                                '', os.path.join(root_path, 'scripts', script), f"{self.hostname}:/tmp")
+                                                '', os.path.join(root_path, 'scripts', script), f"{self.hostname}:$TMPDIR")
                 output = proc1.replace(psexec_options['password'], '*****') + '\n'
                 check_load = self.exec_proc(proc1, encoding, timeout)
                 output += check_load + '\n\n'
@@ -136,7 +137,7 @@ class Agent(db.Model):
                     proc2 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
                                                     psexec_options['port'] if 'port' in psexec_options else None,
                                                     psexec_options['username'], psexec_options['password'],
-                                                    self.hostname, 'chmod', f"+x /tmp/{script_name}")
+                                                    self.hostname, 'chmod', f"+x $TMPDIR/{script_name}")
                     output += proc2.replace(psexec_options['password'], '*****') + '\n'
                     check_chmod = self.exec_proc(proc2, encoding, timeout)
                     output += check_chmod + '\n\n'
@@ -145,7 +146,7 @@ class Agent(db.Model):
                         proc3 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
                                                         psexec_options['port'] if 'port' in psexec_options else None,
                                                         psexec_options['username'], psexec_options['password'],
-                                                        self.hostname, f"/tmp/{script_name}", " ".join(args_list))
+                                                        self.hostname, f"$TMPDIR/{script_name}", " ".join(args_list))
                         output += proc3.replace(psexec_options['password'], '*****') + '\n'
                         output += self.exec_proc(proc3, encoding, timeout) + '\n\n'
 
@@ -153,7 +154,7 @@ class Agent(db.Model):
                                                         psexec_options['port'] if 'port' in psexec_options else None,
                                                         psexec_options['username'],
                                                         psexec_options['password'],
-                                                        self.hostname, 'rm', f"/tmp/{script_name}")
+                                                        self.hostname, 'rm', f"$TMPDIR/{script_name}")
                         output += proc4.replace(psexec_options['password'], '*****') + '\n'
                         check_remove = self.exec_proc(proc4, encoding, timeout)
 

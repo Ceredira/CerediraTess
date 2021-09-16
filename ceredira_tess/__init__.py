@@ -74,6 +74,9 @@ def create_app():
                                        username='admin')
             db.session.commit()
 
+            if app.config.get('INIT_DB_CONFIG'):
+                pass
+
     with app.app_context():
         import flask_admin as admin
         # Create admin

@@ -24,6 +24,8 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
+    INIT_DB_CONFIG = os.environ.get('CT_INIT_DB_CONFIG') or None
+
     ################
     # Flask-Security-Too
     ################

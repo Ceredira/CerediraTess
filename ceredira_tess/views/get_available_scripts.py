@@ -18,12 +18,12 @@ def get_available_scripts():
                 script_content = script_file.read()
 
             try:
-                script_description = re.findall(r'rem script description: (.*)', script_content)
-                script_args_desc = re.findall(r'rem arg description: (.*)', script_content)
-                script_args_example = re.findall(r'rem arg example: (.*)', script_content)
-                script_execution_check = re.findall(r'rem script checking: (.*)', script_content)
-                script_encoding = re.findall(r'rem script encoding: (.*)', script_content)
-                script_timeout = re.findall(r'rem script timeout: (.*)', script_content)
+                script_description = re.findall(r'(?:rem|#) script description: (.*)', script_content)
+                script_args_desc = re.findall(r'(?:rem|#) arg description: (.*)', script_content)
+                script_args_example = re.findall(r'(?:rem|#) arg example: (.*)', script_content)
+                script_execution_check = re.findall(r'(?:rem|#) script checking: (.*)', script_content)
+                script_encoding = re.findall(r'(?:rem|#) script encoding: (.*)', script_content)
+                script_timeout = re.findall(r'(?:rem|#) script timeout: (.*)', script_content)
 
                 result = {
                     'arguments': script_args_example,
