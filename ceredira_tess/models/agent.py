@@ -110,9 +110,12 @@ class Agent(db.Model):
                 proc = '{prog} \\\\{hostname} {username} {password} -accepteula -nobanner {elevated} -f -c {script} {script_args}'.format(
                     prog=os.path.join(root_path, 'resources\\psexec.exe'),
                     hostname=self.hostname,
-                    username=f"-u {psexec_options['username']}" if 'username' in psexec_options and psexec_options['username'] is not None else '',
-                    password=f"-p {psexec_options['password']}" if 'password' in psexec_options and psexec_options['password'] is not None else '',
-                    elevated="-s" if script in ['aisNalog3Install.bat', 'copyAllureResultsToShare.bat'] else '',
+                    username=f"-u {psexec_options['username']}" if 'username' in psexec_options and
+                                                                   psexec_options['username'] is not None else '',
+                    password=f"-p {psexec_options['password']}" if 'password' in psexec_options and
+                                                                   psexec_options['password'] is not None else '',
+                    elevated="-s" if 'elevated' in psexec_options and
+                                     psexec_options['elevated'] is not None else '',
                     script=os.path.join(root_path, 'scripts', script),
                     script_args=" ".join(f'''"{a.replace('"', '""')}"''' for a in args_list)
                 )
@@ -124,11 +127,13 @@ class Agent(db.Model):
                 if 'password' not in psexec_options or psexec_options['password'] is None:
                     raise Exception("Пароль пользователя должен быть обязательно указан в параметре password")
 
+                tmp_dir = psexec_options['tmp_dir'] if 'tmp_dir' in psexec_options and psexec_options['tmp_dir'] is not None else '/tmp'
+
                 # Скопировать скрипт для выполнения на удаленную машину
                 proc1 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\pscp.exe'),
                                                 psexec_options['port'] if 'port' in psexec_options else None,
                                                 psexec_options['username'], psexec_options['password'],
-                                                '', os.path.join(root_path, 'scripts', script), f"{self.hostname}:$TMPDIR")
+                                                '', os.path.join(root_path, 'scripts', script), f"{self.hostname}:{tmp_dir}")
                 output = proc1.replace(psexec_options['password'], '*****') + '\n'
                 check_load = self.exec_proc(proc1, encoding, timeout)
                 output += check_load + '\n\n'
@@ -137,7 +142,7 @@ class Agent(db.Model):
                     proc2 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
                                                     psexec_options['port'] if 'port' in psexec_options else None,
                                                     psexec_options['username'], psexec_options['password'],
-                                                    self.hostname, 'chmod', f"+x $TMPDIR/{script_name}")
+                                                    self.hostname, 'chmod', f"+x {tmp_dir}/{script_name}")
                     output += proc2.replace(psexec_options['password'], '*****') + '\n'
                     check_chmod = self.exec_proc(proc2, encoding, timeout)
                     output += check_chmod + '\n\n'
@@ -146,7 +151,7 @@ class Agent(db.Model):
                         proc3 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
                                                         psexec_options['port'] if 'port' in psexec_options else None,
                                                         psexec_options['username'], psexec_options['password'],
-                                                        self.hostname, f"$TMPDIR/{script_name}", " ".join(args_list))
+                                                        self.hostname, f"{tmp_dir}/{script_name}", " ".join(args_list))
                         output += proc3.replace(psexec_options['password'], '*****') + '\n'
                         output += self.exec_proc(proc3, encoding, timeout) + '\n\n'
 
@@ -154,7 +159,7 @@ class Agent(db.Model):
                                                         psexec_options['port'] if 'port' in psexec_options else None,
                                                         psexec_options['username'],
                                                         psexec_options['password'],
-                                                        self.hostname, 'rm', f"$TMPDIR/{script_name}")
+                                                        self.hostname, 'rm', f"{tmp_dir}/{script_name}")
                         output += proc4.replace(psexec_options['password'], '*****') + '\n'
                         check_remove = self.exec_proc(proc4, encoding, timeout)
 

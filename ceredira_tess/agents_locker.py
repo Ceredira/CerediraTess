@@ -38,10 +38,13 @@ class AgentsLocker:
                 # Get all agents, available for lock by specified user
                 # agents_for_lock = [x.hostname for x in self.list_of_agents if (lock_user in x.users)]
                 agents_for_lock = list_of_agents
+                agents_for_lock_hostnames = list_of_agents
+            else:
+                agents_for_lock_hostnames = [x.split("#")[0] for x in agents_for_lock]
 
             agents_available_for_lock = len([x.hostname for x in list_of_agents if
                                              (x.lock_user is None) and  # not locked agents
-                                             (x.hostname in agents_for_lock)  # agents from required list
+                                             (x.hostname in agents_for_lock_hostnames)  # agents from required list
                                              ]
                                             )
 
@@ -51,8 +54,9 @@ class AgentsLocker:
             if min_agents_count <= agents_available_for_lock >= max_agents_count:
                 if max_agents_count >= min_agents_count:
                     for agent_hostname in agents_for_lock:
-                        if agent_hostname in dict_of_agents:
-                            res, log = dict_of_agents[agent_hostname].lock(lock_user, lock_cause)
+                        agent_hostname_name = agent_hostname.split("#", 1)[0]
+                        if agent_hostname_name in dict_of_agents:
+                            res, log = dict_of_agents[agent_hostname_name].lock(lock_user, lock_cause)
                             locking_log += f'{log}\n'
                             if res:
                                 locked_agents.append(agent_hostname)
