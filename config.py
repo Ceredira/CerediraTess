@@ -58,7 +58,7 @@ class Config(object):
 
 
 class ProductionConfig(Config):
-    DEBUG = False
+    DEBUG = os.environ.get('DEBUG') or False
 
 
 class DevelopmentConfig(Config):
