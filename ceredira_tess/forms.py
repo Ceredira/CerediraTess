@@ -164,7 +164,10 @@ class ScriptModelView(BaseModelView):
     )
 
     column_descriptions = dict(
-        name='Путь к исполняемому файлу от каталога scripts'
+        name='Путь к исполняемому файлу (*.bat, *.exe, *.vbs) от каталога scripts.\nНапример:'
+             'test_script.bat - скрипт в корне каталога,\n'
+             'common\\test_name_1.bat - скрипт в каталоге common,\n'
+             'project_name\\tool.exe - путь к утилите tool.exe в каталоге с именем проекта'
     )
 
     # column_list = ('scripts', )
