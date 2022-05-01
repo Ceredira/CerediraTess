@@ -167,7 +167,9 @@ class ScriptModelView(BaseModelView):
         name='Путь к исполняемому файлу (*.bat, *.exe, *.vbs) от каталога scripts.\nНапример:'
              'test_script.bat - скрипт в корне каталога,\n'
              'common\\test_name_1.bat - скрипт в каталоге common,\n'
-             'project_name\\tool.exe - путь к утилите tool.exe в каталоге с именем проекта'
+             'project_name\\tool.exe - путь к утилите tool.exe в каталоге с именем проекта',
+        description='Произвольное текстовое описание скрипта, отличается то того, что в файлах скриптов с '
+                    'REM DESCRIPTION'
     )
 
     # column_list = ('scripts', )
