@@ -36,7 +36,7 @@ class BaseModelView(sqla.ModelView):
             # Calls the .../duplicate?id={row_id} view
             # with the row_id from the Jinja template
             url='duplicate?id={row_id}',
-            title="Duplicate Row"
+            title="Дублировать запись"
         ),
     ]
 
