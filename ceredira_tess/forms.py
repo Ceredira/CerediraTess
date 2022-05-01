@@ -49,6 +49,8 @@ class BaseModelView(sqla.ModelView):
     def on_model_delete(self, model):
         if type(model) is User and model.username == 'admin':
             raise Exception('Нельзя удалить пользователя admin.')
+        if type(model) is Role and model.name == 'admin':
+            raise Exception('Нельзя удалить роль admin.')
 
     @expose('/duplicate/', methods=('GET', 'POST'))
     def duplicate_view(self):
