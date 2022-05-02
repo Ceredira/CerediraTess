@@ -119,7 +119,12 @@ class Agent(db.Model):
                     script=os.path.join(root_path, 'scripts', script),
                     script_args=" ".join(f'''"{a.replace('"', '""')}"''' for a in args_list)
                 )
-                output = self.exec_proc(proc, encoding, timeout)
+                if 'password' in psexec_options and psexec_options['password'] is not None:
+                    proc_output = proc.replace(psexec_options['password'], '*****')
+                else:
+                    proc_output = proc
+                output = f"Выполнение команды: {proc_output}\nРезультат:\n"
+                output += self.exec_proc(proc, encoding, timeout)
             else:
                 script_name = script.split('\\')[-1]
                 if 'username' not in psexec_options or psexec_options['username'] is None:
