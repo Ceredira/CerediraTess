@@ -14,6 +14,7 @@ def execute_script(script_name):
     hostname = js_receive.get('hostname', 'CerediraTess')
     username = js_receive.get('username', None)
     password = js_receive.get('password', None)
+    elevated = js_receive.get('elevated', None)
     encoding = js_receive.get('encoding', 'utf-8')
     timeout = js_receive.get('timeout', 60)
 
@@ -36,6 +37,6 @@ def execute_script(script_name):
         return f'Script {script_name} not available for execution on host {hostname}', 403
 
     res = agent.execute_script_with_timeout(BASEDIR, script_name,
-                                            {'username': username, 'password': password},
+                                            {'username': username, 'password': password, 'elevated': elevated},
                                             args, encoding, timeout)
     return res, 200
