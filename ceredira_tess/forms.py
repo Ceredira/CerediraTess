@@ -20,9 +20,9 @@ from ceredira_tess.models.user import User
 
 
 class RegistrationForm(form.Form):
-    username = fields.StringField(validators=[validators.required()])
+    username = fields.StringField(validators=[validators.input_required()])
     email = fields.StringField()
-    password = fields.PasswordField(validators=[validators.required()])
+    password = fields.PasswordField(validators=[validators.input_required()])
 
     def validate_login(self, field):
         if db.session.query(User).filter_by(username=self.username.data).count() > 0:
@@ -225,7 +225,7 @@ class MyAdminIndexView(admin.AdminIndexView):
 class LoginForm(Form, NextFormMixin):
     """Customized login form"""
 
-    username = StringField(validators=[validators.required('Пользователь незарегистрирован')])
+    username = StringField(validators=[validators.input_required('Пользователь незарегистрирован')])
     password = PasswordField(validators=[password_required])
     remember = BooleanField()
     submit = SubmitField()
