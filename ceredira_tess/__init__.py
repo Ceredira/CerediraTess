@@ -54,6 +54,12 @@ def create_app():
 
     with app.test_request_context():
         if not os.path.isfile(app.config.get('SQLALCHEMY_DATABASE_URI').replace('sqlite:///', '')):
+            from ceredira_tess.commons import generate_random_string
+            admin_pass = generate_random_string(12)
+
+            with open(os.path.join(config.BASEDIR, 'secret'), mode='w') as file:
+                file.write(f'{"admin"}\n{admin_pass}')
+
             db.create_all()
 
             admin_role = Role('admin')
@@ -70,7 +76,7 @@ def create_app():
             db.session.add(ct_agent)
             db.session.commit()
 
-            user_datastore.create_user(email='admin@admin.ru', password=hash_password("admin"), roles=[admin_role],
+            user_datastore.create_user(email='admin@admin.ru', password=hash_password(admin_pass), roles=[admin_role],
                                        username='admin')
             db.session.commit()
 
