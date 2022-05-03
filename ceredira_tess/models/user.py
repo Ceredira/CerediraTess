@@ -21,7 +21,8 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     confirmed_at = db.Column(db.DateTime())
     active = db.Column(db.Boolean())
-    roles = db.relationship("Role", secondary=relationships.roles_users, backref=db.backref('users', lazy='dynamic'))
+    # roles = db.relationship("Role", secondary=relationships.roles_users, backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship("Role", secondary=relationships.roles_users, back_populates='users')
 
     def __repr__(self):
         return f'{self.username}'
