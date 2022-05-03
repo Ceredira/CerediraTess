@@ -167,7 +167,8 @@ class RoleModelView(BaseModelView):
 class ScriptModelView(BaseModelView):
     column_labels = dict(
         name='Имя скрипта',
-        description='Описание'
+        description='Описание',
+        agents='Агенты'
     )
 
     column_descriptions = dict(
@@ -179,8 +180,8 @@ class ScriptModelView(BaseModelView):
                     'REM DESCRIPTION'
     )
 
-    # column_list = ('scripts', )
-    # column_details_list = ('scripts', )
+    column_list = ('name', 'description', 'agents')
+    column_details_list = ('name', 'description', 'agents')
 
 
 class UserModelView(BaseModelView):
