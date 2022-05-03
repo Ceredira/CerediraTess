@@ -156,11 +156,12 @@ class RoleModelView(BaseModelView):
     column_labels = dict(
         name='Название роли',
         description='Описание',
-        agents='Агенты'
+        agents='Агенты',
+        users='Пользователи'
     )
 
-    # column_list = ('scripts', )
-    # column_details_list = ('scripts', )
+    column_list = ('name', 'description', 'agents', 'users')
+    column_details_list = ('name', 'description', 'agents', 'users')
 
 
 class ScriptModelView(BaseModelView):
