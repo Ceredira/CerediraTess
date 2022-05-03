@@ -1,3 +1,5 @@
+import uuid
+
 import flask_admin as admin
 from flask import url_for, request, flash, abort, current_app, redirect
 from flask_admin import expose
