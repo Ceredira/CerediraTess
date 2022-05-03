@@ -1,5 +1,6 @@
 from datetime import datetime
-from flask_security import UserMixin
+from flask_security import UserMixin, hash_password
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from ceredira_tess.db import db
 from ceredira_tess.models import relationships
@@ -30,3 +31,13 @@ class User(db.Model, UserMixin):
     # Required for administrative interface
     def __unicode__(self):
         return self.username
+
+    @hybrid_property
+    def password2(self):
+        """Return the hashed user password."""
+        return self.password
+
+    @password2.setter
+    def password2(self, new_password2):
+        """Hash and save the user's new password."""
+        self.password = hash_password(new_password2)
