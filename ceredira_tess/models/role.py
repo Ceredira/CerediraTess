@@ -9,6 +9,7 @@ class Role(db.Model, RoleMixin):
     name = db.Column(db.String(64), nullable=False, unique=True)
     description = db.Column(db.String(255))
     agents = db.relationship("Agent", secondary=relationships.roles_agents, back_populates='roles')
+    users = db.relationship("User", secondary=relationships.roles_users, back_populates='roles')
 
     def __repr__(self):
         return f'{self.name}'
