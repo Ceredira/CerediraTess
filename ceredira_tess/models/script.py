@@ -1,4 +1,5 @@
 from ceredira_tess.db import db
+from ceredira_tess.models import relationships
 
 
 class Script(db.Model):
