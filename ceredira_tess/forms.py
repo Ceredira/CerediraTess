@@ -192,11 +192,20 @@ class UserModelView(BaseModelView):
         created_on='Дата создания',
         updated_on='Последнее обновление',
         active='Блокировка',
-        roles='Роли'
+        roles='Роли',
+        last_login_at='Последний вход',
+        current_login_at='Текущий вход',
+        last_login_ip='Последний адрес входа',
+        current_login_ip='Текущий адрес входа',
+        login_count='Количество входов',
+        confirmed_at='Дата подтверждения УЗ'
     )
 
     column_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles')
-    column_details_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles')
+    column_details_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles',
+                           'last_login_at', 'current_login_at', 'last_login_ip', 'current_login_ip',
+                           'login_count', 'confirmed_at')
+    form_columns = ('username', 'active', 'email', 'name', 'roles', 'password', 'fs_uniquifier')
 
 
 # Create customized index view class that handles login & registration
