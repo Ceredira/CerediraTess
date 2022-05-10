@@ -207,15 +207,26 @@ class UserModelView(BaseModelView):
     column_details_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles',
                            'last_login_at', 'current_login_at', 'last_login_ip', 'current_login_ip',
                            'login_count', 'confirmed_at')
-    form_columns = ('username', 'active', 'email', 'name', 'roles', 'password2')
-
-    form_extra_fields = {
-        'password2': PasswordField('Пароль')
-    }
+    form_columns = ('username', 'active', 'email', 'name', 'roles', 'password2', 'confirm')
 
     def on_model_change(self, form, model, is_created):
         if model.fs_uniquifier is None:
             model.fs_uniquifier = uuid.uuid4().hex
+
+    def get_create_form(self):
+        self.form_extra_fields = {
+            'password2': PasswordField('Пароль', [validators.input_required('Необходимо указать пароль'),
+                                                  validators.EqualTo('confirm', message='Пароли не совпадают')]),
+            'confirm': PasswordField('Подтверждение пароля', [validators.input_required('Необходимо повторно указать пароль')])
+        }
+        return self.get_form()
+
+    def get_edit_form(self):
+        self.form_extra_fields = {
+            'password2': PasswordField('Пароль', [validators.EqualTo('confirm', message='Пароли не совпадают')]),
+            'confirm': PasswordField('Подтверждение пароля')
+        }
+        return self.get_form()
 
 
 # Create customized index view class that handles login & registration
