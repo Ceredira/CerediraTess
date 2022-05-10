@@ -21,7 +21,7 @@ class User(db.Model, UserMixin):
     login_count = db.Column(db.Integer)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     confirmed_at = db.Column(db.DateTime())
-    active = db.Column(db.Boolean())
+    active = db.Column(db.Boolean(), default=True)
     # roles = db.relationship("Role", secondary=relationships.roles_users, backref=db.backref('users', lazy='dynamic'))
     roles = db.relationship("Role", secondary=relationships.roles_users, back_populates='users')
 
