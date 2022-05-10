@@ -40,4 +40,5 @@ class User(db.Model, UserMixin):
     @password2.setter
     def password2(self, new_password2):
         """Hash and save the user's new password."""
-        self.password = hash_password(new_password2)
+        if new_password2 is not None and not new_password2 == '':
+            self.password = hash_password(new_password2)
