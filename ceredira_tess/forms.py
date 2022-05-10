@@ -193,7 +193,7 @@ class UserModelView(BaseModelView):
         email='Почта',
         created_on='Дата создания',
         updated_on='Последнее обновление',
-        active='Блокировка',
+        active='Активный',
         roles='Роли',
         last_login_at='Последний вход',
         current_login_at='Текущий вход',
