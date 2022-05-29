@@ -150,8 +150,9 @@ class OperationSystemTypeModelView(BaseModelView):
         osname='Имя ОС'
     )
 
-    # column_list = ('scripts', )
-    # column_details_list = ('scripts', )
+    column_list = ('osname',)
+    column_details_list = ('osname',)
+    form_columns = ('osname',)
 
 
 class RoleModelView(BaseModelView):
