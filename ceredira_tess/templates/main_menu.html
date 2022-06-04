@@ -10,12 +10,13 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item {{ 'active' if from_page == 'CerediraTess' }}">
-                    <a class="nav-link" href="/CerediraTess.html">Выполнение запросов
-                    </a>
+                    <a class="nav-link" href="/CerediraTess.html">Выполнение запросов</a>
                 </li>
                 <li class="nav-item {{ 'active' if from_page == 'AgentLocker' }}">
-                    <a class="nav-link" href="/AgentLocker.html">Блокировка агентов
-                    </a>
+                    <a class="nav-link" href="/AgentLocker.html">Блокировка агентов</a>
+                </li>
+                <li class="nav-item {{ 'active' if from_page == 'ScriptEditor' }}">
+                    <a class="nav-link" href="/ScriptEditor.html">Редактор скриптов</a>
                 </li>
                 {% if current_user.is_authenticated %}
                     {% if role.query.filter_by(name='admin').first() in current_user.roles %}

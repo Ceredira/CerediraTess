@@ -8,4 +8,5 @@ import ceredira_tess.views.ceredira_tess
 import ceredira_tess.views.execute_script
 import ceredira_tess.views.get_available_scripts
 import ceredira_tess.views.static.all
+import ceredira_tess.views.script_editor
 import ceredira_tess.views.www.all

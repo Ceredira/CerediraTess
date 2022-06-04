@@ -1,0 +1,55 @@
+{% extends './ct_layout.html' %}
+
+{% block title %}
+CerediraTess - Редактор скриптов
+{% endblock %}
+
+{% block header %}
+    <script src="static/scriptEditor.js"></script>
+    <script src="static/ace/1.5.0/ace.js"></script>
+    <script src="static/ace/1.5.0/mode-batchfile.js"></script>
+    <script src="static/ace/1.5.0/ext-emmet.js"></script>
+    <script src="static/ace/1.5.0/ext-language_tools.js"></script>
+    <script src="static/aceEditorSnippets.js"></script>
+{% endblock %}
+
+
+{% block body %}
+
+    {{ layout.main_menu('ScriptEditor') }}
+
+<div class="conteiner">
+    <div class="row">
+        <div class="col text-center">
+            <h4><b>Редактор скриптов</b></h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col-10">
+            <div class="input-group input-group-sm mb-3">
+                <input type="button" class="btn btn-primary btn-sm" value="Обновить скрипты" id="updateCT">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Скрипт</span>
+                </div>
+                <select class="custom-select" id="ctScripts">
+                    <option value="" selected disabled>Авторизуйтесь, для получения доступных скриптов</option>
+                </select>
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Код скрипта</span>
+                </div>
+                <pre class="form-control ctScriptBody" id="ctScriptBody"></pre>
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <button type="button" class="btn btn-success btn-block btn-sm" id="saveCTScript">Сохранить скрипт</button>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+
+{% endblock %}

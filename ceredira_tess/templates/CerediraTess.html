@@ -1,142 +1,114 @@
-{% import 'main_menu.html' as layout with context -%}
-{% import 'admin/static.html' as admin_static with context %}
+{% extends './ct_layout.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CerediraTess - Выполнение запросов</title>
+{% block title %}
+CerediraTess - Выполнение запросов
+{% endblock %}
 
-    <link href="{{ admin_static.url(filename='bootstrap/bootstrap4/swatch/{swatch}/bootstrap.min.css'.format(swatch=config.get('FLASK_ADMIN_SWATCH', 'default')), v='4.2.1') }}"
-              rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="static/ctStyle.css">
-
-
-    <script src="{{ admin_static.url(filename='vendor/jquery.min.js') }}" type="text/javascript"></script>
-    <script src="{{ admin_static.url(filename='bootstrap/bootstrap4/js/bootstrap.min.js', v='4.2.1') }}"
-            type="text/javascript"></script>
-
-    <script src="static/ctCommon.js"></script>
+{% block header %}
     <script src="static/cerediraTess.js"></script>
-</head>
-<body>
+{% endblock %}
 
-{{ layout.main_menu('CerediraTess') }}
 
-<div class="conteiner">
-    <div class="row">
-        <div class="col text-center">
-            <h4><b>Выполнение запросов</b></h4>
+{% block body %}
+
+    {{ layout.main_menu('CerediraTess') }}
+
+    <div class="conteiner">
+        <div class="row">
+            <div class="col text-center">
+                <h4><b>Выполнение запросов</b></h4>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col">
-        </div>
-        <div class="col-10">
-            <div class="input-group input-group-sm mb-3">
-                <input type="button" class="btn btn-primary btn-sm" value="Обновить скрипты" id="updateCT">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Скрипт</span>
+        <div class="row">
+            <div class="col">
+            </div>
+            <div class="col-10">
+                <div class="input-group input-group-sm mb-3">
+                    <input type="button" class="btn btn-primary btn-sm" value="Обновить скрипты" id="updateCT">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Скрипт</span>
+                    </div>
+                    <select class="custom-select" id="ctScripts">
+                        <option value="" selected disabled>Авторизуйтесь, для получения доступных скриптов</option>
+                    </select>
                 </div>
-                <select class="custom-select" id="ctScripts">
-                    <option value="" selected disabled>Авторизуйтесь, для получения доступных скриптов</option>
-                </select>
-            </div>
-            <div class="input-group input-group-sm mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Агенты</span>
+                <div class="input-group input-group-sm mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Агенты</span>
+                    </div>
+                    <select class="custom-select width-fit-content" multiple id="ctAgents">
+                        <option value="" selected disabled>Выберите скрипт, для получения доступных агентов</option>
+                    </select>
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Тело запроса</span>
+                    </div>
+                    <textarea class="form-control ctRequestBody" rows="8" id="ctRequestBody">{&#13;&#10;}</textarea>
+                    <table>
+                        <tr>
+                            <td>
+                                <select class="custom-select custom-select-sm" id="setEncodingParam">
+                                    <option value="" selected>Выберите кодировку</option>
+                                    <option value="utf-8">utf-8</option>
+                                    <option value="866">866</option>
+                                    <option value="1251">1251</option>
+                                    <option value="1252">1252</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <select class="custom-select custom-select-sm" id="setCredsParam">
+                                    <option value="" selected>Выберите авторизационные данные</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="number" class="form-control form-control-sm" min="1" max="1000000"
+                                       placeholder="Таймаут секунд" id="setTimeoutParam" value="60">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-block btn-sm"
+                                        id="requestParametersDescription">Описание параметров
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-block btn-sm" id="requestValidation">
+                                    Валидация запроса
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-                <select class="custom-select width-fit-content" multiple id="ctAgents">
-                    <option value="" selected disabled>Выберите скрипт, для получения доступных агентов</option>
-                </select>
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Тело запроса</span>
+                <div class="input-group mb-3">
+
                 </div>
-                <textarea class="form-control ctRequestBody" rows="8" id="ctRequestBody">{&#13;&#10;}</textarea>
-                <table>
-                    <tr>
-                        <td>
-                            <select class="custom-select custom-select-sm" id="setEncodingParam">
-                                <option value="" selected>Выберите кодировку</option>
-                                <option value="utf-8">utf-8</option>
-                                <option value="866">866</option>
-                                <option value="1251">1251</option>
-                                <option value="1252">1252</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <select class="custom-select custom-select-sm" id="setCredsParam">
-                                <option value="" selected>Выберите авторизационные данные</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="number" class="form-control form-control-sm" min="1" max="1000000"
-                                   placeholder="Таймаут секунд" id="setTimeoutParam" value="60">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-block btn-sm"
-                                    id="requestParametersDescription">Описание параметров
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-block btn-sm" id="requestValidation">
-                                Валидация запроса
-                            </button>
-                        </td>
-                    </tr>
-                </table>
+                <div class="input-group input-group-sm mb-3">
+                    <button type="button" class="btn btn-success btn-block btn-sm" id="executeCTRequest">Выполнить запрос
+                    </button>
+                </div>
             </div>
-            <div class="input-group mb-3">
+            <div class="col">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col text-center">
+                <h4><b>История запросов</b></h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+            </div>
+            <div class="col-10">
+                <div class="accordion" id="CTRequestsHistory"></div>
+            </div>
+            <div class="col">
+            </div>
+        </div>
+    </div>
 
-            </div>
-            <div class="input-group input-group-sm mb-3">
-                <button type="button" class="btn btn-success btn-block btn-sm" id="executeCTRequest">Выполнить запрос
-                </button>
-            </div>
-        </div>
-        <div class="col">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col text-center">
-            <h4><b>История запросов</b></h4>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-        </div>
-        <div class="col-10">
-            <div class="accordion" id="CTRequestsHistory"></div>
-        </div>
-        <div class="col">
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="errorModalLabel">Заголовок</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Ok">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="errorModalBody"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
-            </div>
-        </div>
-    </div>
-</div>
-</body>
-</html>
+{% endblock %}
