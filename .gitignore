@@ -160,3 +160,7 @@ cython_debug/
 
 # DB files
 *.db
+
+ceredira_tess/static/admin/
+ceredira_tess/static/bootstrap/
+ceredira_tess/static/vendor/
