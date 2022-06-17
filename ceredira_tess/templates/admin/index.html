@@ -19,7 +19,7 @@
                 {{ f.label }}
                 {{ f }}
                 {% if f.errors %}
-                <ul>
+                <ul class="form-group__error">
                     {% for e in f.errors %}
                     <li>{{ e }}</li>
                     {% endfor %}

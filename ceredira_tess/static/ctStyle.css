@@ -1,7 +1,7 @@
 body {
     font-family: serif;
 }
-ul{
+.form-group__error ul{
     margin: 0;
 }
 .ctRequestBody {
