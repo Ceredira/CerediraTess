@@ -143,7 +143,7 @@ class AgentModelView(BaseModelView):
 
     column_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
     column_details_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
-
+    form_columns = ('hostname', 'operationsystemtype', 'description', 'roles', 'scripts', 'lock_user', 'lock_cause')
 
 class OperationSystemTypeModelView(BaseModelView):
     column_labels = dict(
@@ -165,7 +165,7 @@ class RoleModelView(BaseModelView):
 
     column_list = ('name', 'description', 'agents', 'users')
     column_details_list = ('name', 'description', 'agents', 'users')
-
+    form_columns = ('name', 'description', 'users', 'agents')
 
 class ScriptModelView(BaseModelView):
     column_labels = dict(
@@ -185,7 +185,7 @@ class ScriptModelView(BaseModelView):
 
     column_list = ('name', 'description', 'agents')
     column_details_list = ('name', 'description', 'agents')
-
+    form_columns = ('name', 'description', 'agents')
 
 class UserModelView(BaseModelView):
     column_labels = dict(
@@ -208,7 +208,7 @@ class UserModelView(BaseModelView):
     column_details_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles',
                            'last_login_at', 'current_login_at', 'last_login_ip', 'current_login_ip',
                            'login_count', 'confirmed_at')
-    form_columns = ('username', 'active', 'email', 'name', 'roles', 'password2', 'confirm')
+    form_columns = ('username', 'active', 'password2', 'confirm', 'email', 'name', 'roles')
 
     def on_model_change(self, form, model, is_created):
         if model.fs_uniquifier is None:
