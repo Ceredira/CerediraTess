@@ -2,7 +2,7 @@ altgraph==0.17.2
 Babel==2.10.1
 bleach==5.0.0
 blinker==1.4
-certifi==2022.5.18.1
+certifi==2022.12.7
 cffi==1.15.0
 chardet==4.0.0
 charset-normalizer==2.0.12
