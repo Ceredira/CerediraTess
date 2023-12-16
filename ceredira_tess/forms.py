@@ -39,7 +39,7 @@ class BaseModelView(sqla.ModelView):
             # with the row_id from the Jinja template
             url='duplicate?id={row_id}',
             title="Дублировать запись"
-        ),
+        )
     ]
 
     column_hide_backrefs = False
@@ -145,6 +145,7 @@ class AgentModelView(BaseModelView):
     column_details_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
     form_columns = ('hostname', 'operationsystemtype', 'description', 'roles', 'scripts', 'lock_user', 'lock_cause')
 
+
 class OperationSystemTypeModelView(BaseModelView):
     column_labels = dict(
         osname='Имя ОС'
@@ -167,6 +168,7 @@ class RoleModelView(BaseModelView):
     column_details_list = ('name', 'description', 'agents', 'users')
     form_columns = ('name', 'description', 'users', 'agents')
 
+
 class ScriptModelView(BaseModelView):
     column_labels = dict(
         name='Имя скрипта',
@@ -186,6 +188,7 @@ class ScriptModelView(BaseModelView):
     column_list = ('name', 'description', 'agents')
     column_details_list = ('name', 'description', 'agents')
     form_columns = ('name', 'description', 'agents')
+
 
 class UserModelView(BaseModelView):
     column_labels = dict(
@@ -258,7 +261,7 @@ class MyAdminIndexView(admin.AdminIndexView):
 class LoginForm(Form, NextFormMixin):
     """Customized login form"""
 
-    username = StringField(validators=[validators.input_required('Пользователь незарегистрирован')])
+    username = StringField(validators=[validators.input_required('Пользователь не зарегистрирован')])
     password = PasswordField(validators=[password_required])
     remember = BooleanField()
     submit = SubmitField()
@@ -281,8 +284,8 @@ class LoginForm(Form, NextFormMixin):
             self.password.description = html
         self.requires_confirmation = False
 
-    def validate(self):
-        if not super().validate():
+    def validate(self, extra_validators=None):
+        if not super().validate(extra_validators):
             return False
 
         self.user = lookup_identity(self.username.data)

@@ -6,7 +6,7 @@ import os
 from flask import Flask, url_for
 from flask_admin import helpers
 from flask_admin.menu import MenuLink
-from flask_babelex import Babel
+from flask_babel import Babel
 from flask_security import SQLAlchemyUserDatastore, Security, hash_password
 
 # It's not strictly necessary to import these, but I do it here for PyInstaller
@@ -101,12 +101,6 @@ def create_app():
 
         from ceredira_tess.commons import app as app2
         app.register_blueprint(app2)
-
-    @babel.localeselector
-    def get_locale():
-        # Put your logic here. Application can store locale in
-        # user profile, cookie, session, etc.
-        return 'ru'
 
     @app.context_processor
     def inject_url():
