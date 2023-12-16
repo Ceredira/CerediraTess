@@ -11,8 +11,8 @@ from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.model.template import LinkRowAction
 from flask_security.confirmable import requires_confirmation
 from flask_security.forms import Form, NextFormMixin, password_required, _security
-from flask_security.utils import config_value, url_for_security, get_message, hash_password, find_user, current_user,\
-    logout_user
+from flask_security.utils import config_value, url_for_security, get_message, hash_password, current_user, \
+    logout_user, lookup_identity
 from markupsafe import Markup
 from wtforms import form, fields, validators, StringField, PasswordField, BooleanField, SubmitField
 
@@ -285,7 +285,7 @@ class LoginForm(Form, NextFormMixin):
         if not super().validate():
             return False
 
-        self.user = find_user(self.username.data)
+        self.user = lookup_identity(self.username.data)
 
         if self.user is None:
             self.username.errors.append(get_message("USER_DOES_NOT_EXIST")[0])

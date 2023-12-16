@@ -1,33 +1,9 @@
 {% import 'main_menu.html' as layout with context -%}
 {% import 'admin/static.html' as admin_static with context %}
 
-{% macro render_field_with_errors(field) %}
-    {{ field(**kwargs)|safe }}
-    {% if field.errors %}
-      <ul>
-      {% for error in field.errors %}
-        <li>{{ error }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-{% endmacro %}
-
 {% macro render_field(field) %}
-  <p>{{ field(**kwargs)|safe }}</p>
+  {{ field(**kwargs)|safe }}
 {% endmacro %}
-
-{% macro render_field_errors(field) %}
-  <p>
-    {% if field and field.errors %}
-      <ul>
-      {% for error in field.errors %}
-        <li>{{ error }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  </p>
-{% endmacro %}
-
 
 <!DOCTYPE html>
 <html lang="en">

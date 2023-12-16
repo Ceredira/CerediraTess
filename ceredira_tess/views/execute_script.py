@@ -17,6 +17,7 @@ def execute_script(script_name):
     elevated = js_receive.get('elevated', None)
     encoding = js_receive.get('encoding', 'utf-8')
     timeout = js_receive.get('timeout', 60)
+    tmp_dir = js_receive.get('tmp_dir', None)
 
     script_name = script_name.replace('/', '\\')
 
@@ -36,7 +37,12 @@ def execute_script(script_name):
     if not [script for script in agent.scripts if script.name == script_name]:
         return f'Script {script_name} not available for execution on host {hostname}', 403
 
-    res = agent.execute_script_with_timeout(BASEDIR, script_name,
-                                            {'username': username, 'password': password, 'elevated': elevated},
-                                            args, encoding, timeout)
+    res = agent.execute_script_with_timeout(
+        BASEDIR, script_name, {
+            'username': username,
+            'password': password,
+            'tmp_dir': tmp_dir,
+            'elevated': elevated
+        },
+        args, encoding, timeout)
     return res, 200
