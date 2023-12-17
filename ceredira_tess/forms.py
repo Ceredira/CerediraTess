@@ -141,6 +141,18 @@ class AgentModelView(BaseModelView):
         roles='Роли'
     )
 
+    column_descriptions = dict(
+        hostname='Полное доменное имя машины (сервер, виртуальная машина)',
+        description='Описание агента, можно описать контактные данные администраторов, ролевую принадлежность сервера, '
+                    'установленные службы',
+        lock_cause='Описание причины блокировки агента',
+        lock_user='Имя зарегистрированного пользователя в системе CerediraTess, который блокирует Агент '
+                  'для возможности монопольного выполнения скриптов на нем',
+        operationsystemtype='Операционная система агента',
+        scripts='Список скриптов, доступных для выполнения на агенте',
+        roles='Список ролей, к которым принадлежит агент'
+    )
+
     column_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
     column_details_list = ('hostname', 'operationsystemtype', 'description', 'lock_user', 'lock_cause', 'scripts', 'roles')
     form_columns = ('hostname', 'operationsystemtype', 'description', 'roles', 'scripts', 'lock_user', 'lock_cause')
@@ -149,6 +161,10 @@ class AgentModelView(BaseModelView):
 class OperationSystemTypeModelView(BaseModelView):
     column_labels = dict(
         osname='Имя ОС'
+    )
+
+    column_descriptions = dict(
+        osname='Операционная система агента'
     )
 
     column_list = ('osname',)
@@ -163,6 +179,15 @@ class RoleModelView(BaseModelView):
         agents='Агенты',
         users='Пользователи'
     )
+
+    column_descriptions = dict(
+        name='Название роли',
+        description='Описание роли. Можно описать какие права доступа имеет данная роль, принадлежность к проекту',
+        agents='Агенты системы, к которым имеет доступ роль',
+        users='Пользователи - это аккаунты системы, которых администратор добавляет к данной роли для возможности '
+              'доступа к выполнению скриптов на агентах, добавленные в эту роль.'
+    )
+
 
     column_list = ('name', 'description', 'agents', 'users')
     column_details_list = ('name', 'description', 'agents', 'users')
@@ -181,8 +206,9 @@ class ScriptModelView(BaseModelView):
              'test_script.bat - скрипт в корне каталога,\n'
              'common\\test_name_1.bat - скрипт в каталоге common,\n'
              'project_name\\tool.exe - путь к утилите tool.exe в каталоге с именем проекта',
-        description='Произвольное текстовое описание скрипта, отличается то того, что в файлах скриптов с '
-                    'REM DESCRIPTION'
+        description='Произвольное текстовое описание скрипта, отличается от того, что в файлах скриптов с '
+                    'REM DESCRIPTION',
+        agents='Агенты на которых выполняются скрипты'
     )
 
     column_list = ('name', 'description', 'agents')
@@ -205,6 +231,17 @@ class UserModelView(BaseModelView):
         current_login_ip='Текущий адрес входа',
         login_count='Количество входов',
         confirmed_at='Дата подтверждения УЗ'
+    )
+
+    column_descriptions = dict(
+        name='Имя пользователя',
+        username='Логин пользователя в системе CerediraTess',
+        email='Контактный почтовый ящик (E-mail)',
+        created_on='Дата создания аккаунта',
+        updated_on='Последнее обновление аккаунта',
+        active='Активный - у пользователя есть доступ в систему CerediraTess, '
+               'Неактивный - доступ заблокирован',
+        roles='Роль - назначает права доступа к списку агентов или обозначает принадлежность к проекту'
     )
 
     column_list = ('username', 'active', 'email', 'name', 'created_on', 'updated_on', 'roles')
