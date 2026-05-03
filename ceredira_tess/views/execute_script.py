@@ -18,6 +18,7 @@ def execute_script(script_name):
     encoding = js_receive.get('encoding', 'utf-8')
     timeout = js_receive.get('timeout', 60)
     tmp_dir = js_receive.get('tmp_dir', None)
+    debug = js_receive.get('debug', False)
 
     script_name = script_name.replace('/', '\\')
 
@@ -42,7 +43,8 @@ def execute_script(script_name):
             'username': username,
             'password': password,
             'tmp_dir': tmp_dir,
-            'elevated': elevated
+            'elevated': elevated,
+            'debug': debug
         },
         args, encoding, timeout)
     return res, 200

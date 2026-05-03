@@ -6,6 +6,7 @@ import os
 from flask import Flask, url_for
 from flask_admin import helpers
 from flask_admin.menu import MenuLink
+from flask_admin.theme import Bootstrap4Theme
 from flask_babel import Babel
 from flask_security import SQLAlchemyUserDatastore, Security, hash_password
 
@@ -86,8 +87,11 @@ def create_app():
     with app.app_context():
         import flask_admin as admin
         # Create admin
-        admin = admin.Admin(app, 'CerediraTess', template_mode='bootstrap4', index_view=MyAdminIndexView(),
-                            base_template='my_master.html', static_url_path='../static')
+        admin = admin.Admin(app, 'CerediraTess',
+                            theme=Bootstrap4Theme(base_template='my_master.html', swatch='flatly'),
+                            index_view=MyAdminIndexView(),
+                            static_url_path='../static'
+        )
 
         admin.add_link(MenuLink(name='Выполнение запросов', category='', url='/CerediraTess.html'))
         admin.add_link(MenuLink(name='Блокировка агентов', category='', url='/AgentLocker.html'))
@@ -113,7 +117,7 @@ def create_app():
     @security.context_processor
     def security_context_processor():
         return dict(
-            admin_base_template=admin.base_template,
+            admin_base_template=admin.theme.base_template,
             admin_view=admin.index_view,
             h=helpers,
             get_url=url_for,
