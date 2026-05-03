@@ -106,6 +106,9 @@ class Agent(db.Model):
             args_list = args_list if not None else []
             psexec_options = psexec_options if not None else {}
 
+            debug = psexec_options['debug'] if ('debug' in psexec_options and psexec_options['debug']
+                                                is not None) else False
+
             if self.operationsystemtype.osname == 'Windows':
                 proc = '{prog} \\\\{hostname} {username} {password} -accepteula -nobanner {elevated} -f -c {script} {script_args}'.format(
                     prog=os.path.join(root_path, 'resources\\psexec.exe'),
@@ -127,37 +130,60 @@ class Agent(db.Model):
                 output += self.exec_proc(proc, encoding, timeout)
             else:
                 script_name = script.split('\\')[-1]
-                if 'username' not in psexec_options or psexec_options['username'] is None:
-                    raise Exception("Имя пользователя должно быть обязательно указано в параметре username")
-                if 'password' not in psexec_options or psexec_options['password'] is None:
-                    raise Exception("Пароль пользователя должен быть обязательно указан в параметре password")
+                # if 'username' not in psexec_options or psexec_options['username'] is None:
+                #     raise Exception("Имя пользователя должно быть обязательно указано в параметре username")
+                # if 'password' not in psexec_options or psexec_options['password'] is None:
+                #     raise Exception("Пароль пользователя должен быть обязательно указан в параметре password")
 
-                tmp_dir = psexec_options['tmp_dir'] if 'tmp_dir' in psexec_options and psexec_options['tmp_dir'] is not None else '/tmp'
+                tmp_dir = psexec_options['tmp_dir'] if 'tmp_dir' in psexec_options and psexec_options['tmp_dir'] is not None else '/var/tmp'
+                output = ''
 
                 # Скопировать скрипт для выполнения на удаленную машину
                 proc1 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\pscp.exe'),
                                                 psexec_options['port'] if 'port' in psexec_options else None,
                                                 psexec_options['username'], psexec_options['password'],
                                                 '', os.path.join(root_path, 'scripts', script), f"{self.hostname}:{tmp_dir}")
-                output = proc1.replace(psexec_options['password'], '*****') + '\n'
+
+                if debug:
+                    if 'password' not in psexec_options or psexec_options['password'] is None:
+                        output += proc1 + '\n'
+                    else:
+                        output += proc1.replace(psexec_options['password'], '*****') + '\n'
+
                 check_load = self.exec_proc(proc1, encoding, timeout)
-                output += check_load + '\n\n'
+
+                if debug:
+                    output += check_load + '\n\n'
+
                 if ' | 100%' in check_load:
                     # Указание разрешения на выполнение скрипта на удаленной машине
                     proc2 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
                                                     psexec_options['port'] if 'port' in psexec_options else None,
                                                     psexec_options['username'], psexec_options['password'],
                                                     self.hostname, 'chmod', f"+x {tmp_dir}/{script_name}")
-                    output += proc2.replace(psexec_options['password'], '*****') + '\n'
+
+                    if debug:
+                        if 'password' not in psexec_options or psexec_options['password'] is None:
+                            output += proc2 + '\n'
+                        else:
+                            output += proc2.replace(psexec_options['password'], '*****') + '\n'
+
                     check_chmod = self.exec_proc(proc2, encoding, timeout)
-                    output += check_chmod + '\n\n'
+
+                    if debug:
+                        output += check_chmod + '\n\n'
                     if not check_chmod:
                         # Выполнение скрипта на удаленной машине
                         proc3 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
                                                         psexec_options['port'] if 'port' in psexec_options else None,
                                                         psexec_options['username'], psexec_options['password'],
                                                         self.hostname, f"{tmp_dir}/{script_name}", " ".join(args_list))
-                        output += proc3.replace(psexec_options['password'], '*****') + '\n'
+                        if debug:
+                            if 'password' not in psexec_options or psexec_options['password'] is None:
+                                output += proc3 + '\n'
+                            else:
+                                output += proc3.replace(psexec_options['password'], '*****') + '\n'
+
                         output += self.exec_proc(proc3, encoding, timeout) + '\n\n'
 
                         proc4 = self.generate_linux_cmd(os.path.join(root_path, 'resources\\plink.exe'),
@@ -165,7 +191,13 @@ class Agent(db.Model):
                                                         psexec_options['username'],
                                                         psexec_options['password'],
                                                         self.hostname, 'rm', f"{tmp_dir}/{script_name}")
-                        output += proc4.replace(psexec_options['password'], '*****') + '\n'
+
+                        if debug:
+                            if 'password' not in psexec_options or psexec_options['password'] is None:
+                                output += proc4 + '\n'
+                            else:
+                                output += proc4.replace(psexec_options['password'], '*****') + '\n'
+
                         check_remove = self.exec_proc(proc4, encoding, timeout)
 
                         if check_remove != '':
@@ -184,11 +216,11 @@ class Agent(db.Model):
         return output
 
     def generate_linux_cmd(self, prog, port, username, password, hostname, script, args):
-        cmd = '"{prog}" -P {port} -l "{username}" -pw "{password}" -noagent -2 -4 -batch {hostname} "{script}" {args}'.format(
+        cmd = '"{prog}" -P {port} {username} {password} -2 -4 -agent -batch {hostname} "{script}" {args}'.format(
             prog=prog,
             port=port if port is not None else 22,
-            username=username,
-            password=password,
+            username=f"-l \"{username}\"" if username is not None else '',
+            password=f"-pw \"{password}\"" if password is not None else '',
             script=script,
             hostname=hostname,
             args=args
