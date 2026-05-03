@@ -1,8 +1,18 @@
 import os
+import sys
 
 import bleach as bleach
 
-BASEDIR = os.environ.get('CT_BASEDIR') or os.path.abspath(os.path.dirname(__file__))
+if getattr(sys, 'frozen', False):
+    # Если приложение собрано (PyInstaller)
+    # sys._MEIPASS указывает на путь внутри _internal,
+    # поэтому берем родительский каталог от sys.executable
+    base_path = os.path.dirname(sys.executable)
+else:
+    # Если запущен обычный .py файл
+    base_path = os.path.abspath(os.path.dirname(__file__))
+
+BASEDIR = os.environ.get('CT_BASEDIR') or base_path
 print(f'CerediraTess BASEDIR: {BASEDIR}')
 
 
